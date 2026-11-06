@@ -58,7 +58,7 @@ create trigger akasha_datos_historial
 
 -- Marca la hora del último cambio en cada fila.
 create or replace function public.akasha_marcar_actualizado() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = public as $$
 begin
   new.actualizado := now();
   new.actualizado_por := auth.uid();
@@ -111,13 +111,21 @@ insert into public.akasha_miembros (user_id, email, rol, activo)
 select u.id, u.email, 'profe', false from auth.users u
 on conflict (user_id) do nothing;
 
-create or replace function public.akasha_es_miembro_activo() returns boolean
+-- La verificación vive en un esquema que la API no expone: nadie puede
+-- llamarla desde afuera, sólo la usan las reglas de seguridad.
+create schema if not exists akasha_privado;
+revoke all on schema akasha_privado from public, anon;
+grant usage on schema akasha_privado to authenticated;
+
+create or replace function akasha_privado.es_miembro_activo() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (
     select 1 from public.akasha_miembros
     where user_id = auth.uid() and activo
   );
 $$;
+revoke execute on function akasha_privado.es_miembro_activo() from public, anon;
+grant  execute on function akasha_privado.es_miembro_activo() to authenticated;
 
 -- ---------------------------------------------------------------------
 -- 4. Seguridad: sólo los miembros activos leen y escriben.
@@ -131,16 +139,21 @@ drop policy if exists "miembros leen datos"      on public.akasha_datos;
 drop policy if exists "miembros escriben datos"  on public.akasha_datos;
 drop policy if exists "miembros editan datos"    on public.akasha_datos;
 drop policy if exists "miembros borran datos"    on public.akasha_datos;
-create policy "miembros leen datos"     on public.akasha_datos for select using (public.akasha_es_miembro_activo());
-create policy "miembros escriben datos" on public.akasha_datos for insert with check (public.akasha_es_miembro_activo());
-create policy "miembros editan datos"   on public.akasha_datos for update using (public.akasha_es_miembro_activo()) with check (public.akasha_es_miembro_activo());
-create policy "miembros borran datos"   on public.akasha_datos for delete using (public.akasha_es_miembro_activo());
+create policy "miembros leen datos"     on public.akasha_datos for select to authenticated using (akasha_privado.es_miembro_activo());
+create policy "miembros escriben datos" on public.akasha_datos for insert to authenticated with check (akasha_privado.es_miembro_activo());
+create policy "miembros editan datos"   on public.akasha_datos for update to authenticated using (akasha_privado.es_miembro_activo()) with check (akasha_privado.es_miembro_activo());
+create policy "miembros borran datos"   on public.akasha_datos for delete to authenticated using (akasha_privado.es_miembro_activo());
 
 drop policy if exists "miembros leen historial" on public.akasha_historial;
-create policy "miembros leen historial" on public.akasha_historial for select using (public.akasha_es_miembro_activo());
+create policy "miembros leen historial" on public.akasha_historial for select to authenticated using (akasha_privado.es_miembro_activo());
 
 drop policy if exists "cada uno ve su fila" on public.akasha_miembros;
 create policy "cada uno ve su fila" on public.akasha_miembros for select using (user_id = auth.uid());
+
+-- Las funciones internas no se pueden llamar desde afuera.
+revoke execute on function public.akasha_guardar_historial()  from public, anon, authenticated;
+revoke execute on function public.akasha_marcar_actualizado() from public, anon, authenticated;
+revoke execute on function public.akasha_nuevo_miembro()      from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------
 -- 5. Tiempo real: que los cambios de un profe les lleguen a los demás.

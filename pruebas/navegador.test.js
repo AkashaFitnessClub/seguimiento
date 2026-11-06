@@ -135,12 +135,7 @@ function paso(t){ ok++; console.log('  ok  ' + t); }
     paso('modo local: la app abre igual que la original');
 
     /* ===== 2) Con base compartida ===== */
-    // La lista de alumnos cargada en la base, codificada igual que lo hace la app.
-    const {akStore} = require(path.join(APP, 'akasha-store.js'));
-    const alumnos = fs.readFileSync(path.join(__dirname, '..', 'datos-privados', 'alumnos-base.json'), 'utf8');
-    const {tipo, filas} = akStore._interno.codificar(alumnos);
-    db.akasha_datos.set('akasha-alumnos-base|~', {clave: 'akasha-alumnos-base', subclave: '~', valor: JSON.stringify({t: tipo}), pos: 0});
-    filas.forEach((f, i) => db.akasha_datos.set('akasha-alumnos-base|' + f.s, {clave: 'akasha-alumnos-base', subclave: f.s, valor: f.v, pos: i}));
+    // La base arranca vacía: la lista de alumnos se arma importando Crossfy.
     db.akasha_miembros.set('u-agus@akasha.test', {activo: true, rol: 'admin'});
     db.akasha_miembros.set('u-lucas@akasha.test', {activo: true, rol: 'profe'});
     db.akasha_miembros.set('u-nuevo@akasha.test', {activo: false, rol: 'profe'});
@@ -160,14 +155,25 @@ function paso(t){ ok++; console.log('  ok  ' + t); }
     await A.fill('#ak-pass', 'clave123'); await A.click('#ak-f button[type=submit]');
     await A.waitForSelector('#app .topbar', {timeout: 15000});
     await A.waitForSelector('#ak-estado');
-    const nA = await A.evaluate(() => ALUMNOS.length);
-    assert.ok(nA >= 1195, 'alumnos cargados desde la base: ' + nA);
-    paso(`entra y trae los ${nA} alumnos desde la base`);
+    assert.strictEqual(await A.evaluate(() => ALUMNOS.length), 0);
+    paso('entra con la base vacía (sin lista de alumnos en el código)');
+
+    // Importa el listado de usuarios de Crossfy, como desde "Importar datos".
+    const usuarios = estado2 => ({nombre: 'usuarios.xlsx', tipo: 'usuarios',
+      headersNorm: ['id socio', 'nombre', 'apellido', 'email', 'estado', 'ultimo paquete'],
+      dataRows: [[101, 'Ana', 'Prueba', 'ana@x.com', 'Activo', 'MENSUAL'],
+                 [102, 'Beto', 'Prueba', 'beto@x.com', estado2, 'MENSUAL'],
+                 [103, 'Carla', 'Prueba', 'carla@x.com', 'Activo', 'VENCIDO']]});
+    await A.evaluate(h => aplicarHoja(h), usuarios('Activo'));
+    await A.waitForFunction(() => akStore.estado().pendientes === 0, null, {timeout: 10000});
+    assert.strictEqual(await A.evaluate(() => ALUMNOS.length), 3);
+    paso('importar usuarios de Crossfy arma la lista y la guarda en la base');
 
     const B = await nuevaPagina(browser, url, errores);
     await ingresar(B, 'lucas@akasha.test');
     await B.waitForSelector('#app .topbar', {timeout: 15000});
-    paso('segundo profe entra en otro aparato');
+    assert.strictEqual(await B.evaluate(() => ALUMNOS.length), 3);
+    paso('segundo profe entra en otro aparato y ve los mismos alumnos');
 
     // A cambia el nivel de un alumno y deja una nota de clase, como lo hace la app.
     const idAlumno = await A.evaluate(() => {
@@ -200,6 +206,17 @@ function paso(t){ ok++; console.log('  ok  ' + t); }
     const reset = await B.evaluate(() => typeof reiniciarDemo === 'function' && (window.alert = () => {}, reiniciarDemo(), akStore.getItem('akasha-nivel') !== null));
     assert.ok(reset, 'reiniciarDemo no debe borrar datos compartidos');
     paso('"Reiniciar datos de demo" no puede borrar los datos del equipo');
+
+    // Se vuelve a importar el listado: Beto quedó suspendido en Crossfy.
+    await A.evaluate(h => aplicarHoja(h), usuarios('Suspendido'));
+    await A.waitForFunction(() => akStore.estado().pendientes === 0, null, {timeout: 10000});
+    const D = await nuevaPagina(browser, url, errores);
+    await ingresar(D, 'lucas@akasha.test');
+    await D.waitForSelector('#app .topbar', {timeout: 15000});
+    const beto = await D.evaluate(() => { const a = ALUMNOS.find(x => x.id === 102); return a && a.estado; });
+    assert.strictEqual(beto, 'Suspendido');
+    assert.strictEqual(await D.evaluate(() => ALUMNOS.length), 3);
+    paso('al reimportar, el estado nuevo queda guardado (y no se duplican alumnos)');
 
     // Cuenta sin activar.
     const C = await nuevaPagina(browser, url, errores);

@@ -8,13 +8,10 @@ Uso:
 
 Genera:
     app/index.html                     la app lista para publicar
-    datos-privados/alumnos-base.json   la lista de alumnos que venía escrita
-                                       dentro del código (NO se publica: va a la base)
 
 Se puede volver a correr con cada versión nueva del artifact: así se
 puede seguir mejorando la app en el chat y pasar los cambios acá.
 """
-import json
 import pathlib
 import re
 import subprocess
@@ -43,24 +40,29 @@ def main():
         fallar('el script de la app no cierra')
     codigo = html[ini.end():fin]
 
-    # 2) La lista de alumnos escrita en el código pasa a la base de datos.
+    # 2) La lista de alumnos escrita en el código NO se publica: la lista
+    #    se arma y se actualiza importando el listado de usuarios de Crossfy,
+    #    y queda guardada (protegida) en la base.
     m = re.search(r'^const ALUMNOS = \[\n.*?^\];\n', codigo, re.S | re.M)
     if not m:
         fallar('no encontré "const ALUMNOS = [ ... ];"')
-    literal = m.group(0)[len('const ALUMNOS = '):].rstrip().rstrip(';')
-    r = subprocess.run(['node', '-e', 'process.stdout.write(JSON.stringify(eval(require("fs").readFileSync(0,"utf8"))))'],
-                       input='(' + literal + ')', capture_output=True, text=True)
-    if r.returncode != 0:
-        fallar('no pude leer la lista de alumnos: ' + r.stderr)
-    alumnos = json.loads(r.stdout)
-    privados = RAIZ / 'datos-privados'
-    privados.mkdir(exist_ok=True)
-    (privados / 'alumnos-base.json').write_text(json.dumps(alumnos, ensure_ascii=False, indent=0), encoding='utf-8')
+    n_alumnos = m.group(0).count('{id:')
     codigo = codigo.replace(m.group(0),
-        "/* La lista base de alumnos ahora vive en la base de datos (clave\n"
-        "   'akasha-alumnos-base'), no escrita en el código: así el código no\n"
-        "   lleva datos personales. */\n"
-        "const ALUMNOS = akStore.leerJSON('akasha-alumnos-base', []);\n", 1)
+        "/* La lista de alumnos no va escrita en el código: se arma con el\n"
+        "   listado de usuarios de Crossfy (Importar datos) y queda guardada en\n"
+        "   la base compartida. */\n"
+        "const ALUMNOS = [];\n", 1)
+
+    # 2b) Al volver a importar usuarios, el estado y el paquete nuevos se
+    #     guardan (antes se cambiaban sólo en pantalla y al recargar volvían
+    #     a los de la primera importación).
+    viejo = "if(paquete && ya.paquete !== paquete) ya.paquete = paquete;"
+    if codigo.count(viejo) != 1:
+        fallar('no encontré dónde se actualiza el paquete al importar usuarios')
+    codigo = codigo.replace(viejo, viejo +
+        "\n                  const regGuardado = alumnosImportados.find(x => x.id === idNum);"
+        "\n                  if(regGuardado){ if(estado) regGuardado.estado = estado; if(paquete) regGuardado.paquete = paquete; }"
+        "\n                  else alumnosImportados.push({id:idNum, nombre: ya.nombre, apellido: ya.apellido, estado: ya.estado, paquete: ya.paquete});", 1)
 
     # 3) Todo lo que se guardaba en el aparato pasa por la capa compartida.
     n_ls = codigo.count('localStorage.')
@@ -95,7 +97,7 @@ def main():
     salida.write_text(nuevo, encoding='utf-8')
     print(f'OK  app/index.html ({len(nuevo)//1024} KB)')
     print(f'    {n_ls} usos de localStorage pasados a la base compartida')
-    print(f'    {len(alumnos)} alumnos movidos a datos-privados/alumnos-base.json')
+    print(f'    lista de {n_alumnos} alumnos sacada del código (se arma importando Crossfy)')
 
 
 if __name__ == '__main__':

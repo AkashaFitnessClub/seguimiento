@@ -26,22 +26,15 @@ ven lo mismo, desde cualquier aparato, y no se pierde nada.
 | `supabase/esquema.sql` | Crea la base de datos con sus reglas de seguridad. |
 | `herramientas/convertir.py` | Pasa una versión nueva del artifact a esta versión. |
 | `pruebas/` | Pruebas automáticas (sincronización y navegador). |
-| `datos-privados/` | Lista de alumnos y datos personales. **No se sube a GitHub.** |
 | `original/` | Copia exacta de la app original. **No se sube a GitHub.** |
 
 ## Puesta en marcha (una sola vez)
 
-### 1. Crear el proyecto en Supabase
-1. Entrá a https://supabase.com y creá una cuenta (plan gratuito).
-2. "New project": nombre `akasha`, elegí una contraseña para la base
-   (guardala en un lugar seguro) y la región **São Paulo** (la más cercana).
-3. Esperá un par de minutos a que se cree.
-
-### 2. Crear la base de datos
-1. En el menú de la izquierda: **SQL Editor** → **New query**.
-2. Pegá todo el contenido de `supabase/esquema.sql` y tocá **Run**.
-3. Pegá el contenido de `datos-privados/cargar-alumnos.sql` y tocá **Run**
-   (carga la lista base de alumnos).
+### 1 y 2. Proyecto y base de datos ✅ (hecho)
+Proyecto **Akasha FC** en Supabase, con las tablas, las reglas de
+seguridad y el historial ya creados (`supabase/esquema.sql`). La lista
+de alumnos **no** se precarga: se arma y se actualiza importando el
+listado de usuarios de Crossfy desde "Importar datos".
 
 ### 3. Ajustes de acceso
 En **Authentication**:
@@ -51,13 +44,10 @@ En **Authentication**:
 2. **URL Configuration** → **Site URL**: poné la dirección donde quede
    publicada la app (paso 5).
 
-### 4. Conectar la app con tu Supabase
-En **Project Settings → API** copiá:
-- **Project URL**
-- la clave **anon / public** (esta clave es pública a propósito; la
-  seguridad la dan las reglas de la base, no la clave)
-
-y pegalas en `app/config.js`. **Nunca** pongas ahí la clave `service_role`.
+### 4. Conectar la app con tu Supabase ✅ (hecho)
+`app/config.js` ya tiene la dirección del proyecto y la clave **pública**
+(anon). Es pública a propósito: la seguridad la dan las reglas de la
+base. **Nunca** pongas ahí la clave `service_role`.
 
 ### 5. Publicar la app
 Se publica desde GitHub en **Netlify** o **Cloudflare Pages** (gratis,

@@ -890,10 +890,10 @@ const PROFESORES = ['Agus', 'Lucas'];
    app no los necesita y esta página se comparte por link. Objetivo,
    alertas, adaptaciones y observación de ingreso arrancan vacíos y se
    completan desde la ficha o importando el formulario de ingreso. */
-/* La lista base de alumnos ahora vive en la base de datos (clave
-   'akasha-alumnos-base'), no escrita en el código: así el código no
-   lleva datos personales. */
-const ALUMNOS = akStore.leerJSON('akasha-alumnos-base', []);
+/* La lista de alumnos no va escrita en el código: se arma con el
+   listado de usuarios de Crossfy (Importar datos) y queda guardada en
+   la base compartida. */
+const ALUMNOS = [];
 
 /* Disciplina que se toma cuando el listado de turnos no trae la
    columna. Ya no hay clases ni listas de ejemplo: las clases salen sólo
@@ -7834,6 +7834,9 @@ function aplicarHoja(hoja){
                   }
                   if(estado && ya.estado !== estado){ ya.estado = estado; actualizados++; }
                   if(paquete && ya.paquete !== paquete) ya.paquete = paquete;
+                  const regGuardado = alumnosImportados.find(x => x.id === idNum);
+                  if(regGuardado){ if(estado) regGuardado.estado = estado; if(paquete) regGuardado.paquete = paquete; }
+                  else alumnosImportados.push({id:idNum, nombre: ya.nombre, apellido: ya.apellido, estado: ya.estado, paquete: ya.paquete});
                 }else{
                   ALUMNOS.push({id:idNum, nombre, apellido, estado, paquete,
                                 objetivo:'', nivel:2, observacionIngreso:'',
