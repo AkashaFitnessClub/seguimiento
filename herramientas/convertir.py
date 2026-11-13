@@ -64,6 +64,24 @@ def main():
         "\n                  if(regGuardado){ if(estado) regGuardado.estado = estado; if(paquete) regGuardado.paquete = paquete; }"
         "\n                  else alumnosImportados.push({id:idNum, nombre: ya.nombre, apellido: ya.apellido, estado: ya.estado, paquete: ya.paquete});", 1)
 
+    # 2c) Con usuario y contraseña, el "profe" es quien inició sesión: su
+    #     nombre sale de la tabla akasha_miembros. Ya no hace falta el botón
+    #     para elegir profe; tocar el nombre abre el menú de la cuenta.
+    reemplazos = [
+        ("leerParte('profesor', () => { profesorActivo = localStorage.getItem('akasha-profesor') || PROFESORES[0]; });",
+         "leerParte('profesor', () => { profesorActivo = (window.AKASHA_USUARIO && window.AKASHA_USUARIO.nombre) || localStorage.getItem('akasha-profesor') || PROFESORES[0]; });"),
+        ('<button class="profesor-pill" onclick="cambiarProfesor()"><span class="dot"></span>${esc(profesorActivo)} ▾</button>',
+         '${window.AKASHA_USUARIO'
+         ' ? `<button class="profesor-pill" onclick="akAbrirMenuCuenta()" title="Tu cuenta"><span class="dot"></span>${esc(profesorActivo)}</button>`'
+         ' : `<button class="profesor-pill" onclick="cambiarProfesor()"><span class="dot"></span>${esc(profesorActivo)} ▾</button>`}'),
+        ("function cambiarProfesor(){\n",
+         "function cambiarProfesor(){\n  if(window.AKASHA_USUARIO) return;\n"),
+    ]
+    for viejo, nuevo in reemplazos:
+        if codigo.count(viejo) != 1:
+            fallar('no encontré: ' + viejo[:60])
+        codigo = codigo.replace(viejo, nuevo, 1)
+
     # 3) Todo lo que se guardaba en el aparato pasa por la capa compartida.
     n_ls = codigo.count('localStorage.')
     codigo = codigo.replace('localStorage.', 'akStore.')

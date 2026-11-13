@@ -217,12 +217,18 @@
     }
     akStore.alCambiar(pintar); pintar(akStore.estado());
 
+    window.akAbrirMenuCuenta = () => {
+      pill.onclick();
+      const m = document.getElementById('ak-menu');
+      if(m) Object.assign(m.style, {top: '64px', right: '16px', left: 'auto', bottom: 'auto'});
+    };
     pill.onclick = () => {
       let m = document.getElementById('ak-menu');
       if(m){ m.remove(); return; }
       const e = akStore.estado();
       m = document.createElement('div'); m.id = 'ak-menu';
-      m.innerHTML = `<div class="q">${esc(email || '')}</div>
+      const u = window.AKASHA_USUARIO || {};
+      m.innerHTML = `<div class="q"><b style="color:var(--text,#F2F2F2)">${esc(u.nombre || '')}</b><br>${esc(email || '')}</div>
         <div class="d">${e.pendientes ? 'Hay ' + e.pendientes + ' cambio(s) guardados en este aparato que se suben solos cuando haya conexión.' : 'Todo lo cargado está guardado en la nube.'}</div>
         <button type="button" id="ak-act">↻ Actualizar datos</button>
         <button type="button" id="ak-salir">Cerrar sesión</button>`;
@@ -290,10 +296,18 @@
 
     pantalla('<p class="ak-sub">Trayendo los datos del equipo…</p>');
     const {data: yo, error: errMiembro} = await sb.from('akasha_miembros')
-      .select('activo,rol').eq('user_id', session.user.id).maybeSingle();
+      .select('activo,rol,nombre').eq('user_id', session.user.id).maybeSingle();
     /* Sin conexión no se puede verificar: se sigue con lo guardado en el
        aparato (la nube igual rechaza cualquier escritura no permitida). */
     if(!errMiembro && !(yo && yo.activo)) return esperarActivacion(sb, email);
+
+    /* Quién está usando la app: su nombre queda en las novedades, cargas y
+       notas que registre. Se edita en Supabase, tabla akasha_miembros. */
+    const nombreGuardado = (yo && yo.nombre) || null;
+    try{ if(nombreGuardado) localStorage.setItem('akasha-nombre-cuenta', nombreGuardado); }catch(e){}
+    let nombre = nombreGuardado;
+    try{ nombre = nombre || localStorage.getItem('akasha-nombre-cuenta'); }catch(e){}
+    window.AKASHA_USUARIO = {nombre: nombre || (email || '').split('@')[0], rol: (yo && yo.rol) || 'profe', email};
 
     await akStore.iniciar(backendSupabase(sb));
     montarIndicador(sb, email);

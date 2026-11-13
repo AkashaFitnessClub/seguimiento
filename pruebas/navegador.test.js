@@ -136,8 +136,8 @@ function paso(t){ ok++; console.log('  ok  ' + t); }
 
     /* ===== 2) Con base compartida ===== */
     // La base arranca vacía: la lista de alumnos se arma importando Crossfy.
-    db.akasha_miembros.set('u-agus@akasha.test', {activo: true, rol: 'admin'});
-    db.akasha_miembros.set('u-lucas@akasha.test', {activo: true, rol: 'profe'});
+    db.akasha_miembros.set('u-agus@akasha.test', {activo: true, rol: 'admin', nombre: 'Agus'});
+    db.akasha_miembros.set('u-lucas@akasha.test', {activo: true, rol: 'profe', nombre: 'Lucas'});
     db.akasha_miembros.set('u-nuevo@akasha.test', {activo: false, rol: 'profe'});
 
     const srv = await servir("window.AKASHA_CONFIG = {supabaseUrl:'https://x.supabase.co', supabaseAnonKey:'publica'};");
@@ -169,10 +169,21 @@ function paso(t){ ok++; console.log('  ok  ' + t); }
     assert.strictEqual(await A.evaluate(() => ALUMNOS.length), 3);
     paso('importar usuarios de Crossfy arma la lista y la guarda en la base');
 
+    // El profe es quien inició sesión: no se puede cambiar con el botón.
+    assert.strictEqual(await A.evaluate(() => profesorActivo), 'Agus');
+    await A.click('.profesor-pill');
+    assert.strictEqual(await A.evaluate(() => profesorActivo), 'Agus');
+    assert.ok(await A.isVisible('#ak-menu'), 'tocar el nombre abre el menú de la cuenta');
+    assert.match(await A.textContent('#ak-menu'), /Cerrar sesión/);
+    await A.screenshot({path: path.join(CAPTURAS, '6-menu-cuenta.png')});
+    await A.click('.profesor-pill');
+    paso('el nombre de arriba es el de la cuenta (sin selector de profe) y abre el menú');
+
     const B = await nuevaPagina(browser, url, errores);
     await ingresar(B, 'lucas@akasha.test');
     await B.waitForSelector('#app .topbar', {timeout: 15000});
     assert.strictEqual(await B.evaluate(() => ALUMNOS.length), 3);
+    assert.strictEqual(await B.evaluate(() => profesorActivo), 'Lucas');
     paso('segundo profe entra en otro aparato y ve los mismos alumnos');
 
     // A cambia el nivel de un alumno y deja una nota de clase, como lo hace la app.

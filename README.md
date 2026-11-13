@@ -61,7 +61,9 @@ con repositorio privado). Cada cambio que se sube a GitHub se publica solo.
    elegir su contraseña.
 3. Activalo: **Table Editor → akasha_miembros** → marcá **activo** en su
    fila. Hasta que no lo actives no ve ningún dato.
-4. Para sacarle el acceso a alguien: desmarcá **activo**.
+4. Escribí su nombre en la columna **nombre** (es el que aparece arriba
+   en la app y queda en las novedades, cargas y notas que registre).
+5. Para sacarle el acceso a alguien: desmarcá **activo**.
 
 ### 7. Pasar los datos que ya tienen cargados
 Los datos de la app original están guardados en cada aparato. En cada
