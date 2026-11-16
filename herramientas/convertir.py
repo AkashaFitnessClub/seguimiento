@@ -93,6 +93,13 @@ def main():
         "<button class=\"btn btn-primary btn-block\" onclick=\"akDictado.abrir('${c.id}')\">"
         "🎤 Notas${c.finalizada ? ' · clase finalizada ✓' : ''}</button>", 1)
 
+    # 2e) En el inicio, acceso a los formularios de ingreso (formularios.js).
+    fila_buscar = "<button class=\"linkrow\" onclick=\"nav('alumnos')\"><span>Buscar alumno</span><span class=\"arrow\">›</span></button>"
+    if codigo.count(fila_buscar) != 1:
+        fallar('no encontré la fila "Buscar alumno" del inicio')
+    codigo = codigo.replace(fila_buscar, fila_buscar +
+        "\n      <button class=\"linkrow\" onclick=\"akFormularios.abrir()\"><span>📋 Formularios de ingreso</span><span class=\"arrow\">›</span></button>", 1)
+
     # 3) Todo lo que se guardaba en el aparato pasa por la capa compartida.
     n_ls = codigo.count('localStorage.')
     codigo = codigo.replace('localStorage.', 'akStore.')

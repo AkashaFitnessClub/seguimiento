@@ -13,6 +13,20 @@ fs.mkdirSync(CAPTURAS, {recursive: true});
 
 /* ---------- Supabase simulado (vive en Node, lo comparten las páginas) ---------- */
 const db = {akasha_datos: new Map(), akasha_miembros: new Map()};
+const resp = (obj, tener, cerca) => [
+  {pregunta: '¿Qué te gustaría conseguir entrenando?', respuesta: obj},
+  {pregunta: '¿Ya entrenaste anteriormente?', respuesta: 'Sí, entreno actualmente'},
+  {pregunta: '¿Hay algo que deberíamos saber para poder orientarte mejor?', respuesta: tener},
+  {pregunta: 'Si encontramos una forma de entrenamiento que se adapte a vos, ¿qué tan cerca estás de empezar?', respuesta: cerca},
+  {pregunta: 'Datos de contacto', respuesta: ''},
+];
+const FORMULARIOS = [
+  {id: 's1', recibido: '2026-11-01T10:00:00Z', nombre: 'Ana', email: 'ana@x.com', whatsapp: '+5491100000001', horario_contacto: 'Tarde',
+   cercania: 'Quiero empezar cuanto antes', objetivo: 'Ganar fuerza', respuestas: resp('Ganar fuerza', 'Me operaron la rodilla derecha', 'Quiero empezar cuanto antes')},
+  {id: 's2', recibido: '2026-11-02T10:00:00Z', nombre: 'Lucía', email: 'lucia@x.com', whatsapp: '+5491100000002', horario_contacto: 'Mañana',
+   cercania: 'Quiero empezar cuanto antes', objetivo: 'Tener más energía', respuestas: resp('Tener más energía', 'Tuve un esguince de tobillo', 'Quiero empezar cuanto antes')},
+];
+FORMULARIOS.forEach(f => { f.respuestas[4].respuesta = f.email; });
 const paginas = new Set();
 function filasDatos(){ return [...db.akasha_datos.values()]; }
 async function difundir(ev){
@@ -22,6 +36,9 @@ async function ejecutar(q){
   if(q.tabla === 'akasha_miembros'){
     const uid = (q.filtros.find(f => f[0] === 'user_id') || [])[1];
     return {data: db.akasha_miembros.get(uid) || null, error: null};
+  }
+  if(q.tabla === 'akasha_formularios'){
+    return {data: FORMULARIOS.slice().sort((a, b) => a.recibido < b.recibido ? -1 : 1), error: null};
   }
   if(q.op === 'select'){
     const ord = filasDatos().sort((a, b) => a.clave < b.clave ? -1 : a.clave > b.clave ? 1 : (a.subclave < b.subclave ? -1 : a.subclave > b.subclave ? 1 : 0));
@@ -168,6 +185,28 @@ function paso(t){ ok++; console.log('  ok  ' + t); }
     await A.waitForFunction(() => akStore.estado().pendientes === 0, null, {timeout: 10000});
     assert.strictEqual(await A.evaluate(() => ALUMNOS.length), 3);
     paso('importar usuarios de Crossfy arma la lista y la guarda en la base');
+
+    // Formularios de Tally que llegaron a la base: Ana (alumna) y Lucía (prospecto).
+    await A.evaluate(() => akFormularios.recargar());
+    await A.waitForFunction(() => { const a = ALUMNOS.find(x => x.id === 101); return a && a.objetivo; }, null, {timeout: 10000});
+    const fichaAna = await A.evaluate(() => { const a = ALUMNOS.find(x => x.id === 101); return {objetivo: a.objetivo, obs: a.observacionIngreso}; });
+    assert.strictEqual(fichaAna.objetivo, 'Ganar fuerza');
+    assert.match(fichaAna.obs, /rodilla derecha/);
+    await A.waitForFunction(() => akStore.estado().pendientes === 0, null, {timeout: 10000});
+    paso('la ficha del alumno se completa sola con su formulario de Tally');
+
+    await A.click('text=📋 Formularios de ingreso');
+    await A.waitForSelector('.fm-card');
+    const tarjetas = await A.$$eval('.fm-card', els => els.map(e => e.textContent.replace(/\s+/g, ' ')));
+    assert.strictEqual(tarjetas.length, 2);
+    assert.ok(tarjetas.some(t => /Ana Prueba.*Alumno/.test(t)), tarjetas.join(' | '));
+    assert.ok(tarjetas.some(t => /Lucía.*Prospecto.*Quiero empezar cuanto antes/.test(t)), tarjetas.join(' | '));
+    assert.ok(tarjetas.some(t => /⚠ Tuve un esguince de tobillo/.test(t)), 'muestra lo que hay que tener en cuenta');
+    await A.click('text=Prospectos (1)');
+    assert.strictEqual((await A.$$('.fm-card')).length, 1);
+    await A.screenshot({path: path.join(CAPTURAS, '9-formularios.png')});
+    await A.click('.fm-cab .backbtn');
+    paso('la lista de formularios distingue alumnos y prospectos, con alertas y WhatsApp');
 
     // El profe es quien inició sesión: no se puede cambiar con el botón.
     assert.strictEqual(await A.evaluate(() => profesorActivo), 'Agus');

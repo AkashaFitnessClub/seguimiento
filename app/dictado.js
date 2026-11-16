@@ -22,7 +22,7 @@
 
   function norm(s){
     return String(s == null ? '' : s).toLowerCase()
-      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/(\d)[,.](\d)/g, '$1d$2')          // 40,5 -> 40d5 (se recupera después)
       .replace(/[^a-z0-9ñ\s]/g, ' ')
       .replace(/\s+/g, ' ').trim();

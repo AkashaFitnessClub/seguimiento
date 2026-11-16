@@ -268,9 +268,11 @@
     s.textContent = codigo.textContent;
     document.body.appendChild(s);
     /* Notas por voz de la clase: usa las funciones de la app. */
-    const d = document.createElement('script');
-    d.src = 'dictado.js';
-    document.body.appendChild(d);
+    ['dictado.js', 'formularios.js'].forEach(src => {
+      const d = document.createElement('script');
+      d.src = src; d.async = false;
+      document.body.appendChild(d);
+    });
   }
 
   async function principal(){
@@ -313,6 +315,7 @@
     try{ nombre = nombre || localStorage.getItem('akasha-nombre-cuenta'); }catch(e){}
     window.AKASHA_USUARIO = {nombre: nombre || (email || '').split('@')[0], rol: (yo && yo.rol) || 'profe', email};
 
+    window.akSupabase = sb;   // para leer tablas propias (formularios de ingreso)
     await akStore.iniciar(backendSupabase(sb));
     montarIndicador(sb, email);
     lanzarApp();
