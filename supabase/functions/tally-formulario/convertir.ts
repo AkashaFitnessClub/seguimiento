@@ -42,7 +42,10 @@ export function convertir(payload: any) {
     horario_contacto: buscar((c) => norm(c.label).includes("momento del dia")),
     cercania: buscar((c) => norm(c.label).includes("que tan cerca")),
     objetivo: buscar((c) => norm(c.label).includes("conseguir entrenando")),
-    respuestas,
+    // Campos ocultos del link (?origen=Instagram&campana=...): de dónde vino.
+    origen: buscar((c) => c.type === "HIDDEN_FIELDS" && norm(c.label) === "origen"),
+    campana: buscar((c) => c.type === "HIDDEN_FIELDS" && norm(c.label) === "campana"),
+    respuestas: respuestas.filter((r) => !["origen", "campana"].includes(norm(r.pregunta))),
   };
 }
 

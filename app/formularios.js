@@ -47,7 +47,7 @@
     if(!sb){ st.error = 'local'; return; }
     st.cargando = true;
     const {data, error} = await sb.from('akasha_formularios')
-      .select('id,recibido,nombre,email,whatsapp,horario_contacto,cercania,objetivo,respuestas')
+      .select('id,recibido,nombre,email,whatsapp,horario_contacto,cercania,objetivo,origen,campana,respuestas')
       .order('recibido', {ascending: true});
     st.cargando = false;
     if(error){ st.error = error.message; pintar(); return; }
@@ -107,6 +107,7 @@
         ${a ? '<span class="fm-tag al">Alumno</span>' : '<span class="fm-tag pr">Prospecto</span>'}
         ${f.cercania ? `<span class="fm-tag ${cercaniaClase(f.cercania)}">${esc(f.cercania)}</span>` : ''}
         ${f.objetivo ? `<span class="fm-tag ob">${esc(f.objetivo)}</span>` : ''}
+        ${f.origen ? `<span class="fm-tag ob">Vino por: ${esc(f.origen)}${f.campana ? ' · ' + esc(f.campana) : ''}</span>` : ''}
       </div>
       ${alerta ? `<div class="fm-alerta">⚠ ${esc(tener)}</div>` : ''}
       <div class="fm-acc">

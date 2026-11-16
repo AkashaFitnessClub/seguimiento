@@ -22,6 +22,8 @@ const payload = {
       {key: 'q7', label: 'Datos de contacto', type: 'INPUT_EMAIL', value: 'Lucia@Mail.com'},
       {key: 'q8', label: '¿En que momento del día preferís que te contactemos?', type: 'MULTIPLE_CHOICE', value: ['h3'],
        options: [{id: 'h3', text: 'Tarde'}]},
+      {key: 'h1', label: 'origen', type: 'HIDDEN_FIELDS', value: 'Instagram'},
+      {key: 'h2', label: 'campana', type: 'HIDDEN_FIELDS', value: 'reel-niveles-nov'},
       {key: 'q9', label: '¿Cómo fueron tus experiencias anteriores entrenando?', type: 'TEXTAREA', value: null},
     ],
   },
@@ -34,6 +36,9 @@ assert.strictEqual(f.whatsapp, '+5491112345678');
 assert.strictEqual(f.horario_contacto, 'Tarde');
 assert.strictEqual(f.cercania, 'Quiero empezar cuanto antes');
 assert.strictEqual(f.objetivo, 'Ganar fuerza');
+assert.strictEqual(f.origen, 'Instagram');
+assert.strictEqual(f.campana, 'reel-niveles-nov');
+assert.ok(!f.respuestas.some(r => r.pregunta === 'origen'), 'el origen no se mezcla con las respuestas');
 const cuesta = f.respuestas.find(r => r.pregunta.startsWith('¿Qué sentís'));
 assert.strictEqual(cuesta.respuesta, 'Me cuesta ser constante, Los horarios');
 assert.strictEqual(f.respuestas.filter(r => r.pregunta.includes('(Me')).length, 0, 'sin las filas sueltas por casilla');
