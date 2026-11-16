@@ -2931,7 +2931,7 @@ function screenClase(claseId){
            justamente para cerrar lo que quedó abierto, hace falta ver de
            un vistazo si esta ya está. Sigue abriendo el mismo modal, que
            trae la observación final cargada y se puede completar. -->
-      <button class="btn ${c.finalizada ? 'btn-ghost' : 'btn-primary'} btn-block" onclick="abrirFinalizar('${c.id}')">${c.finalizada ? '✓ Clase finalizada · editar cierre' : 'Finalizar clase'}</button>
+      <button class="btn btn-primary btn-block" onclick="akDictado.abrir('${c.id}')">🎤 Notas${c.finalizada ? ' · clase finalizada ✓' : ''}</button>
     </div>
   `;
 }

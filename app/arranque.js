@@ -267,6 +267,10 @@
     const s = document.createElement('script');
     s.textContent = codigo.textContent;
     document.body.appendChild(s);
+    /* Notas por voz de la clase: usa las funciones de la app. */
+    const d = document.createElement('script');
+    d.src = 'dictado.js';
+    document.body.appendChild(d);
   }
 
   async function principal(){

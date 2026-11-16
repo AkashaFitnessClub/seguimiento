@@ -82,6 +82,17 @@ def main():
             fallar('no encontré: ' + viejo[:60])
         codigo = codigo.replace(viejo, nuevo, 1)
 
+    # 2d) El botón de abajo de la clase abre "Notas de la clase" con el
+    #     dictado por voz (dictado.js). Finalizar la clase sigue estando
+    #     ahí adentro y abre el mismo cierre de siempre.
+    boton_fin = ("<button class=\"btn ${c.finalizada ? 'btn-ghost' : 'btn-primary'} btn-block\" onclick=\"abrirFinalizar('${c.id}')\">"
+                 "${c.finalizada ? '✓ Clase finalizada · editar cierre' : 'Finalizar clase'}</button>")
+    if codigo.count(boton_fin) != 1:
+        fallar('no encontré el botón "Finalizar clase" de la pantalla de la clase')
+    codigo = codigo.replace(boton_fin,
+        "<button class=\"btn btn-primary btn-block\" onclick=\"akDictado.abrir('${c.id}')\">"
+        "🎤 Notas${c.finalizada ? ' · clase finalizada ✓' : ''}</button>", 1)
+
     # 3) Todo lo que se guardaba en el aparato pasa por la capa compartida.
     n_ls = codigo.count('localStorage.')
     codigo = codigo.replace('localStorage.', 'akStore.')
