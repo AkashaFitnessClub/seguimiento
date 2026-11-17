@@ -49,7 +49,7 @@ function propiedades(tipo: keyof typeof BASES, f: any): Record<string, unknown> 
     Clave: titulo(f.clave), Mes: fecha(f.mes), Horario: sel(f.hora), Disciplina: sel(f.disciplina),
     Clases: num(f.clases), Reservas: num(f.reservas), Presentes: num(f.presentes), "Promedio por clase": num(f.promedio),
     Cupo: num(f.cupo), "Ocupación %": num(f.ocupacion), "Ausentismo %": num(f.ausentismo),
-    Pruebas: num(f.pruebas), Compraron: num(f.compraron),
+    // La conversión de pruebas se mide en "Prospectos" (Crossfy no registra a los que no compran).
   };
   if (tipo === "dia") return {
     Clave: titulo(f.clave), Mes: fecha(f.mes), "Día": sel(f.dia), Clases: num(f.clases), Reservas: num(f.reservas),
