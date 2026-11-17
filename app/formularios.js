@@ -61,15 +61,26 @@
      (cruce por email, sólo completa campos vacíos, la respuesta más nueva gana). */
   function aplicarAFichas(lista){
     if(!lista.length) return;
+    /* Las columnas se arman por NOMBRE de pregunta, no por posición: el
+       formulario cambió con el tiempo (las primeras respuestas tienen una
+       pregunta más) y por posición quedaba todo corrido y no cruzaba nadie.
+       Si una pregunta aparece repetida en la misma respuesta (pasa con el
+       objetivo), cada aparición va a su propia columna. */
+    const conClave = f => {
+      const vistas = {};
+      return (f.respuestas || []).map(r => {
+        const n = normHeader(r.pregunta);
+        vistas[n] = (vistas[n] || 0) + 1;
+        return {n, k: n + '#' + vistas[n], respuesta: r.respuesta};
+      });
+    };
+    const filas = lista.map(conClave);
     const columnas = [];
-    lista.forEach(f => (f.respuestas || []).forEach((r, i) => {
-      const n = normHeader(r.pregunta);
-      if(!columnas.some(c => c.n === n && c.i === i)) columnas.push({n, i, pregunta: r.pregunta});
-    }));
+    filas.forEach(fila => fila.forEach(r => { if(!columnas.some(c => c.k === r.k)) columnas.push({k: r.k, n: r.n}); }));
     const headersNorm = columnas.map(c => c.n);
-    const dataRows = lista.map(f => columnas.map(c => {
-      const r = (f.respuestas || [])[c.i];
-      return r && normHeader(r.pregunta) === c.n ? r.respuesta : '';
+    const dataRows = filas.map(fila => columnas.map(c => {
+      const r = fila.find(x => x.k === c.k);
+      return r ? r.respuesta : '';
     }));
     try{
       aplicarHojaOriginal({nombre: 'Formulario (automático)', tipo: 'formulario', headersNorm, dataRows});

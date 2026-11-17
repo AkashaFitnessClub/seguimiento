@@ -27,6 +27,14 @@ const FORMULARIOS = [
    cercania: 'Quiero empezar cuanto antes', objetivo: 'Tener más energía', respuestas: resp('Tener más energía', 'Tuve un esguince de tobillo', 'Quiero empezar cuanto antes')},
 ];
 FORMULARIOS.forEach(f => { f.respuestas[4].respuesta = f.email; });
+/* Respuesta vieja de Beto, con la versión anterior del formulario: tiene la
+   pregunta del objetivo repetida, así que todo lo demás queda corrido un
+   lugar. Es la más antigua, como en la base real. */
+FORMULARIOS.unshift({id: 's0', recibido: '2026-08-26T10:00:00Z', nombre: 'Beto', email: 'beto@x.com', whatsapp: '+5491100000003', horario_contacto: 'Tarde',
+  cercania: 'Quiero empezar cuanto antes', objetivo: 'Ganar fuerza',
+  respuestas: [{pregunta: '¿Qué te gustaría conseguir entrenando?', respuesta: 'Tener más energía'}]
+    .concat(resp('Ganar fuerza', 'Dolor lumbar', 'Quiero empezar cuanto antes'))});
+FORMULARIOS[0].respuestas[5].respuesta = 'beto@x.com';
 const paginas = new Set();
 function filasDatos(){ return [...db.akasha_datos.values()]; }
 async function difundir(ev){
@@ -192,13 +200,16 @@ function paso(t){ ok++; console.log('  ok  ' + t); }
     const fichaAna = await A.evaluate(() => { const a = ALUMNOS.find(x => x.id === 101); return {objetivo: a.objetivo, obs: a.observacionIngreso}; });
     assert.strictEqual(fichaAna.objetivo, 'Ganar fuerza');
     assert.match(fichaAna.obs, /rodilla derecha/);
+    const fichaBeto = await A.evaluate(() => { const a = ALUMNOS.find(x => x.id === 102); return {objetivo: a.objetivo, obs: a.observacionIngreso}; });
+    assert.strictEqual(fichaBeto.objetivo, 'Tener más energía · Ganar fuerza');
+    assert.match(fichaBeto.obs, /Dolor lumbar/);
     await A.waitForFunction(() => akStore.estado().pendientes === 0, null, {timeout: 10000});
-    paso('la ficha del alumno se completa sola con su formulario de Tally');
+    paso('las fichas se completan solas con su formulario de Tally (también con la versión vieja del formulario)');
 
     await A.click('text=📋 Formularios de ingreso');
     await A.waitForSelector('.fm-card');
     const tarjetas = await A.$$eval('.fm-card', els => els.map(e => e.textContent.replace(/\s+/g, ' ')));
-    assert.strictEqual(tarjetas.length, 2);
+    assert.strictEqual(tarjetas.length, 3);
     assert.ok(tarjetas.some(t => /Ana Prueba.*Alumno/.test(t)), tarjetas.join(' | '));
     assert.ok(tarjetas.some(t => /Lucía.*Prospecto.*Quiero empezar cuanto antes/.test(t)), tarjetas.join(' | '));
     assert.ok(tarjetas.some(t => /⚠ Tuve un esguince de tobillo/.test(t)), 'muestra lo que hay que tener en cuenta');
