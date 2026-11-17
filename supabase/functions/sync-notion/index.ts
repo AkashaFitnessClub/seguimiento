@@ -1,5 +1,6 @@
-// Lleva las métricas de ocupación, conversión y retención a Notion.
-// La llama pg_cron todos los lunes (y se puede llamar a mano).
+// Lleva las métricas de ocupación, conversión y retención a Notion, y marca
+// en Prospectos a quienes ya son alumnos o se inscribieron.
+// La llama pg_cron todos los días (y se puede llamar a mano).
 // Sólo acepta pedidos con la clave interna x-sync-key (guardada en la base).
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
@@ -17,13 +18,13 @@ const BASES = {
 const TITULO = { horario: "Clave", dia: "Clave", retencion: "Mes (clave)" } as const;
 
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
-async function notion(metodo: string, ruta: string, cuerpo?: unknown): Promise<any> {
+async function notion(metodo: string, ruta: string, cuerpo?: unknown, version = "2022-06-28"): Promise<any> {
   for (let intento = 0; intento < 5; intento++) {
     const r = await fetch("https://api.notion.com/v1" + ruta, {
       method: metodo,
       headers: {
         Authorization: `Bearer ${NOTION_TOKEN}`,
-        "Notion-Version": "2022-06-28",
+        "Notion-Version": version,
         "Content-Type": "application/json",
       },
       body: cuerpo ? JSON.stringify(cuerpo) : undefined,
@@ -91,6 +92,35 @@ async function existentes(base: string, prop: string) {
   return mapa;
 }
 
+// Prospectos – Formulario de ingreso (fuente de datos dentro de la base).
+const PROSPECTOS = "2d1ac255-8521-4e5e-b04a-06eb4f5687c8";
+// Sólo se tocan los que siguen en "Nuevo": si alguien del equipo ya movió
+// la etapa a mano, se respeta.
+async function marcarProspectos() {
+  const { data, error } = await db.rpc("akasha_prospectos_etapa");
+  if (error) throw new Error("Error leyendo prospectos: " + error.message);
+  const etapa = new Map<string, string>((data ?? []).map((f: any) => [f.email, f.etapa]));
+  const r = { revisados: 0, marcados: 0 };
+  let cursor: string | undefined;
+  do {
+    const q = await notion("POST", `/data_sources/${PROSPECTOS}/query`, {
+      page_size: 100, start_cursor: cursor,
+      filter: { property: "Etapa", status: { equals: "Nuevo" } },
+    }, "2025-09-03");
+    for (const p of q.results) {
+      r.revisados++;
+      const email = String(p.properties?.Email?.email ?? "").trim().toLowerCase();
+      const nueva = email ? etapa.get(email) : undefined;
+      if (!nueva) continue;
+      await notion("PATCH", `/pages/${p.id}`, { properties: { Etapa: { status: { name: nueva } } } }, "2025-09-03");
+      r.marcados++;
+      await esperar(340);
+    }
+    cursor = q.has_more ? q.next_cursor : undefined;
+  } while (cursor);
+  return r;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Usar POST", { status: 405 });
   if (!NOTION_TOKEN) return new Response("Falta configurar NOTION_TOKEN", { status: 500 });
@@ -101,7 +131,7 @@ Deno.serve(async (req) => {
   const { data: m, error } = await db.rpc("akasha_metricas");
   if (error) return new Response("Error leyendo métricas: " + error.message, { status: 500 });
 
-  const resumen: Record<string, { creadas: number; actualizadas: number; iguales: number }> = {};
+  const resumen: Record<string, any> = {};
   try {
     for (const tipo of ["retencion", "dia", "horario"] as const) {
       const base = BASES[tipo];
@@ -122,6 +152,7 @@ Deno.serve(async (req) => {
         await esperar(340); // Notion admite ~3 pedidos por segundo
       }
     }
+    resumen.prospectos = await marcarProspectos();
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e), resumen }), { status: 502, headers: { "content-type": "application/json" } });
   }
