@@ -272,7 +272,9 @@
     const s = document.createElement('script');
     s.textContent = codigo.textContent;
     document.body.appendChild(s);
-    /* Notas por voz de la clase: usa las funciones de la app. */
+    /* Notas por voz de la clase: usa las funciones de la app. La pared
+       (link #pantalla) no los necesita. */
+    if(/^#pantalla\b/.test(location.hash)) return;
     ['dictado.js', 'formularios.js'].forEach(src => {
       const d = document.createElement('script');
       d.src = src; d.async = false;
@@ -321,6 +323,13 @@
     window.AKASHA_USUARIO = {nombre: nombre || (email || '').split('@')[0], rol: (yo && yo.rol) || 'profe', email};
 
     window.akSupabase = sb;   // para leer tablas propias (formularios de ingreso)
+    /* La cuenta de la tele (rol "pantalla") sólo muestra la pared: entra
+       siempre en modo pantalla y sólo puede escribir el control de la
+       pantalla (el código de vinculación). */
+    if(window.AKASHA_USUARIO.rol === 'pantalla'){
+      akStore.limitarEscritura(['akasha-pantalla']);
+      if(!/^#pantalla\b/.test(location.hash)) history.replaceState(null, '', location.pathname + '#pantalla');
+    }
     await akStore.iniciar(backendSupabase(sb));
     montarIndicador(sb, email);
     lanzarApp();

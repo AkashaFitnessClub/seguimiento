@@ -127,7 +127,7 @@ const paso = t => { ok++; console.log('  ok  ' + t); };
   const errores = [];
   db.akasha_miembros.set('u-agus@akasha.test', {activo: true, rol: 'admin', nombre: 'Agus'});
   db.akasha_miembros.set('u-lucas@akasha.test', {activo: true, rol: 'profe', nombre: 'Lucas'});
-  db.akasha_miembros.set('u-pared@akasha.test', {activo: true, rol: 'profe', nombre: 'Pantalla salón'});
+  db.akasha_miembros.set('u-pared@akasha.test', {activo: true, rol: 'pantalla', nombre: 'Pantalla salón'});
   try{
     /* ---- El celular de Agus arma el día: alumnos, clase, rutina con niveles ---- */
     const P = await nuevaPagina(browser, url, errores, {width: 400, height: 860});
@@ -166,8 +166,9 @@ const paso = t => { ok++; console.log('  ok  ' + t); };
     assert.strictEqual(await P.evaluate(() => RUTINA_HOY.bloques.length), 2);
     paso('día armado: 6 presentes en una clase con rutina de 3 niveles');
 
-    /* ---- La tele abre el link directo ---- */
-    const T = await nuevaPagina(browser, url + '#pantalla', errores, {width: 1280, height: 720});
+    /* ---- La tele: cuenta de rol "pantalla". Aunque abra el link común,
+       entra directo a la pared. ---- */
+    const T = await nuevaPagina(browser, url, errores, {width: 1280, height: 720});
     await ingresar(T, 'pared@akasha.test');
     await T.waitForSelector('.pantalla-pared .pv-cuerpo');
     const tele = await T.evaluate(() => ({
@@ -183,8 +184,17 @@ const paso = t => { ok++; console.log('  ok  ' + t); };
     assert.match(tele.codigo || '', /^\d{4}$/);
     assert.strictEqual(tele.botones, 0);
     await subido(T);
+    assert.ok(db.akasha_datos.has('akasha-pantalla|o:codigo'));
+    assert.strictEqual(await T.evaluate(() => location.hash), '#pantalla');
     await T.screenshot({path: path.join(CAPTURAS, 'pantalla-1-tele-sin-vincular.png')});
-    paso('la tele con el link directo entra sola a la pared: niveles, presentes y código ' + tele.codigo);
+    paso('la cuenta de la tele entra sola a la pared (niveles, presentes y código ' + tele.codigo + ')');
+
+    const antes = JSON.stringify([...db.akasha_datos.keys()].filter(k => k.startsWith('akasha-novedades')));
+    const cola = await T.evaluate(() => { akStore.setItem('akasha-novedades', JSON.stringify([{id: 'x', nota: 'desde la tele'}])); return akStore._interno.cola.length; });
+    await T.waitForTimeout(800);
+    assert.strictEqual(cola, 0);
+    assert.strictEqual(JSON.stringify([...db.akasha_datos.keys()].filter(k => k.startsWith('akasha-novedades'))), antes);
+    paso('la cuenta de la tele no sube nada que no sea el control de la pantalla');
 
     /* ---- El celular se vincula con el código ---- */
     await P.evaluate(() => abrirPantallaCtl());

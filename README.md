@@ -79,9 +79,13 @@ Se suman: no se borra lo que ya estaba.
 
 - **Link directo:** `…/#pantalla` (por ejemplo
   `https://akashafitnessclub.github.io/seguimiento/#pantalla`). Se abre
-  en el navegador de la tele, se inicia sesión una vez (conviene una
-  cuenta aparte, "Pantalla salón") y queda mostrando la clase en curso,
-  sin botones. Se recarga sola cuando cambian los presentes o la rutina.
+  en el navegador de la tele, se inicia sesión una vez y queda mostrando
+  la clase en curso, sin botones. Se recarga sola cuando cambian los
+  presentes o la rutina.
+- **Cuenta de la tele:** una cuenta con rol `pantalla` en
+  `akasha_miembros` (ver `supabase/pantalla.sql`). Entra siempre a la
+  pared, aunque se abra el link común, y la base no la deja cambiar nada
+  salvo el código de la pantalla ni ver formularios o historial.
 - **Manejarla:** en la app, **Pantalla del día** → poner el código que se
   ve en la tele → **Vincular**. Desde ahí se elige el bloque, si queda
   fijo o rota cada 25 s, y el tamaño de letra. Si otro profe pone el

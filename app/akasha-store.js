@@ -135,6 +135,11 @@
      pantalla del salón: ahí esperar a recargar no sirve. */
   const vivos = new Map();   // clave -> Set(fn)
   const remotas = new Set(); // claves que otro aparato cambió desde que se abrió esta pantalla
+  /* Cuenta de sólo mostrar (la tele): lo que no esté en esta lista se
+     cambia en memoria pero no se sube. La base igual lo rechazaría, y un
+     rechazo trabaría también la subida de lo que sí puede escribir. */
+  let soloPuedeEscribir = null;   // null = sin límite; Set de claves si hay
+  const puedeSubir = clave => !soloPuedeEscribir || soloPuedeEscribir.has(clave);
   function avisarVivo(clave){
     const fns = vivos.get(clave);
     if(fns) fns.forEach(fn => { try{ fn(); }catch(e){} });
@@ -194,6 +199,13 @@
       if(!lsSet(clave, valor)) throw new Error('No hay espacio en este aparato');
       return;
     }
+    if(!puedeSubir(clave)){
+      const {tipo, filas} = codificar(valor);
+      const m = new Map([['~', {v: JSON.stringify({t: tipo}), p: 0}]]);
+      filas.forEach((f, i) => m.set(f.s, {v: f.v, p: i}));
+      base.set(clave, m);
+      return;
+    }
     const anterior = base.get(clave) || new Map();
     const {tipo, filas} = codificar(valor);
     const pos = asignarPosiciones(filas, anterior);
@@ -218,6 +230,7 @@
     if(!backend || SOLO_ESTE_APARATO.has(clave)){ lsDel(clave); return; }
     const anterior = base.get(clave);
     if(!anterior) return;
+    if(!puedeSubir(clave)){ base.delete(clave); return; }
     anterior.forEach((f, s) => encolar({op:'del', c: clave, s}));
     base.delete(clave);
     guardarCola(); guardarCache(); programarSubida(); avisar();
@@ -273,6 +286,7 @@
     /* 1) Lo último que este aparato vio (sirve si arranca sin internet). */
     try{ base = cargarDesdePlano(JSON.parse(lsGet(CACHE_KEY) || '[]')); }catch(e){ base = new Map(); }
     try{ cola = JSON.parse(lsGet(COLA_KEY) || '[]') || []; }catch(e){ cola = []; }
+    if(soloPuedeEscribir) cola = cola.filter(o => soloPuedeEscribir.has(o.c));
     /* 2) Lo que hay en la nube, si hay conexión. */
     let desdeNube = false;
     try{
@@ -344,6 +358,11 @@
     key(){ return null; }, get length(){ return 0; },
     iniciar, subirTodoYEsperar, refrescarClave,
     clavesRemotas(){ return Array.from(remotas); },
+    limitarEscritura(claves){
+      /* Se llama antes de iniciar(); ahí también se descarta lo que haya
+         quedado en cola de otra cuenta usada en este aparato. */
+      soloPuedeEscribir = new Set(claves);
+    },
     enVivo(clave, fn){
       if(!vivos.has(clave)) vivos.set(clave, new Set());
       vivos.get(clave).add(fn);
