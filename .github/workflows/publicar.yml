@@ -1,4 +1,6 @@
-# Publica la carpeta app/ en GitHub Pages cada vez que se sube un cambio a main.
+# Publica la app en GitHub Pages cada vez que se sube un cambio a main.
+# Si existe la rama "prueba", su app se publica además en /prueba/, para
+# probar cambios con los datos reales sin tocar la app de todos los días.
 name: Publicar app
 on:
   push:
@@ -19,9 +21,25 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: principal
+      - name: Traer la versión de prueba, si hay
+        run: |
+          if git ls-remote --exit-code --heads "https://github.com/${{ github.repository }}" prueba >/dev/null; then
+            git clone --depth 1 --branch prueba "https://github.com/${{ github.repository }}" version-prueba
+          fi
+      - name: Armar el sitio
+        run: |
+          mkdir -p sitio
+          cp -r principal/app/. sitio/
+          if [ -d version-prueba/app ]; then
+            mkdir -p sitio/prueba
+            cp -r version-prueba/app/. sitio/prueba/
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: app
+          path: sitio
       - id: deploy
         uses: actions/deploy-pages@v4

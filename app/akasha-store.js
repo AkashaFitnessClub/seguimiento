@@ -129,6 +129,16 @@
   let subiendo = false, reintento = null, errorUltimo = null;
   let cambiosRemotos = false;
   const oyentes = new Set();
+  /* Claves "en vivo": lo que llega de otro aparato se aplica en el acto
+     (sin el aviso de "Tocá para actualizar") y se avisa a quien escucha.
+     Son cajas chicas que no se editan a medias, como el control de la
+     pantalla del salón: ahí esperar a recargar no sirve. */
+  const vivos = new Map();   // clave -> Set(fn)
+  const remotas = new Set(); // claves que otro aparato cambió desde que se abrió esta pantalla
+  function avisarVivo(clave){
+    const fns = vivos.get(clave);
+    if(fns) fns.forEach(fn => { try{ fn(); }catch(e){} });
+  }
 
   function avisar(){ oyentes.forEach(fn => { try{ fn(estado()); }catch(e){} }); }
   function estado(){
@@ -294,14 +304,51 @@
       return;                                  // es nuestro propio cambio que vuelve
     }
     if(cola.some(o => o.c === ev.c && o.s === ev.s)) return;
+    if(vivos.has(ev.c)){
+      aplicarOp(base, ev.tipo === 'DELETE' ? {op:'del', c: ev.c, s: ev.s}
+        : {op:'up', c: ev.c, s: ev.s, v: ev.v, p: ev.p == null ? (actual ? actual.p : 0) : Number(ev.p)});
+      guardarCache();
+      avisarVivo(ev.c);
+      return;
+    }
+    remotas.add(ev.c);
     cambiosRemotos = true;
     avisar();
+  }
+
+  /* Vuelve a leer de la nube una clave en vivo. Por si se cortó la
+     conexión en tiempo real y se perdió algún cambio: la pantalla del
+     salón lo llama cada tanto. Lo que este aparato tiene sin subir se
+     respeta. */
+  async function refrescarClave(clave){
+    if(!backend || !backend.leerClave) return false;
+    let filas;
+    try{ filas = await backend.leerClave(clave); }catch(e){ return false; }
+    const nuevas = new Map();
+    filas.forEach(([c, s, v, p]) => { if(c === clave) nuevas.set(s, {v, p: p == null ? 0 : Number(p)}); });
+    cola.filter(o => o.c === clave).forEach(o => {
+      if(o.op === 'up') nuevas.set(o.s, {v: o.v, p: o.p}); else nuevas.delete(o.s);
+    });
+    const antes = base.get(clave) || new Map();
+    let distinto = antes.size !== nuevas.size;
+    if(!distinto) nuevas.forEach((f, s) => { const a = antes.get(s); if(!a || a.v !== f.v || a.p !== f.p) distinto = true; });
+    if(!distinto) return false;
+    if(nuevas.size) base.set(clave, nuevas); else base.delete(clave);
+    guardarCache();
+    avisarVivo(clave);
+    return true;
   }
 
   const akStore = {
     getItem, setItem, removeItem,
     key(){ return null; }, get length(){ return 0; },
-    iniciar, subirTodoYEsperar,
+    iniciar, subirTodoYEsperar, refrescarClave,
+    clavesRemotas(){ return Array.from(remotas); },
+    enVivo(clave, fn){
+      if(!vivos.has(clave)) vivos.set(clave, new Set());
+      vivos.get(clave).add(fn);
+      return () => vivos.get(clave).delete(fn);
+    },
     estado, alCambiar(fn){ oyentes.add(fn); return () => oyentes.delete(fn); },
     get enLaNube(){ return !!backend; },
     leerJSON(clave, porDefecto){

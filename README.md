@@ -75,6 +75,29 @@ celular o tablet donde se usó:
 
 Se suman: no se borra lo que ya estaba.
 
+## Pantalla del salón (tele o proyector)
+
+- **Link directo:** `…/#pantalla` (por ejemplo
+  `https://akashafitnessclub.github.io/seguimiento/#pantalla`). Se abre
+  en el navegador de la tele, se inicia sesión una vez (conviene una
+  cuenta aparte, "Pantalla salón") y queda mostrando la clase en curso,
+  sin botones. Se recarga sola cuando cambian los presentes o la rutina.
+- **Manejarla:** en la app, **Pantalla del día** → poner el código que se
+  ve en la tele → **Vincular**. Desde ahí se elige el bloque, si queda
+  fijo o rota cada 25 s, y el tamaño de letra. Si otro profe pone el
+  código, pasa a manejarla él; la pared no cambia hasta que elija algo.
+- **Qué muestra:** el bloque con una columna por nivel (sólo los niveles
+  con alguien presente) y, debajo de cada nivel, sus presentes con las
+  cargas confirmadas. Nombres y ejercicios van abreviados: la
+  abreviatura de cada ejercicio se puede cargar en el **Banco de
+  ejercicios**; si no, se arma sola (primera palabra + iniciales).
+- **Cargas:** en la clase, el botón **🏋️ Cargas** abre la lista de
+  presentes con sus cargas (las de hoy o la última que hicieron). Tocando
+  un nombre se cambian. **Confirmar** las pasa a la ficha de cada alumno;
+  sólo van a la tele si está tildado **Mostrar en la pantalla del salón**.
+- **Versión de prueba:** lo que se sube a la rama `prueba` se publica en
+  `…/seguimiento/prueba/`, con los mismos datos reales.
+
 ## Seguir mejorando la app
 
 Se puede seguir trabajando la app en el chat de Claude (artifact) como

@@ -165,6 +165,11 @@
         }
         return todo;
       },
+      async leerClave(clave){
+        const {data, error} = await sb.from(TABLA).select('clave,subclave,valor,pos').eq('clave', clave);
+        if(error) throw error;
+        return (data || []).map(r => [r.clave, r.subclave, r.valor, r.pos]);
+      },
       async aplicar(ops){
         const ups = ops.filter(o => o.op === 'up').map(o => ({clave: o.c, subclave: o.s, valor: o.v, pos: o.p}));
         for(let i = 0; i < ups.length; i += 500){
@@ -186,7 +191,7 @@
           .on('postgres_changes', {event: '*', schema: 'public', table: TABLA}, p => {
             const fila = (p.eventType === 'DELETE' ? p.old : p.new) || {};
             if(!fila.clave) return;
-            fn({tipo: p.eventType, c: fila.clave, s: fila.subclave, v: p.new ? p.new.valor : null});
+            fn({tipo: p.eventType, c: fila.clave, s: fila.subclave, v: p.new ? p.new.valor : null, p: p.new ? p.new.pos : null});
           })
           .subscribe();
       },

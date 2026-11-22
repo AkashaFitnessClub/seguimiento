@@ -1,0 +1,16 @@
+# Al subir un cambio a la rama "prueba", vuelve a publicar el sitio desde
+# main (que es la única rama que puede publicar en GitHub Pages); ese
+# workflow trae la app de esta rama y la pone en /prueba/.
+name: Publicar versión de prueba
+on:
+  push:
+    branches: [prueba]
+permissions:
+  actions: write
+jobs:
+  avisar:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh workflow run publicar.yml --ref main --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
