@@ -826,6 +826,81 @@
   }
   .pantalla-punto.activo{background:#C6FC00; border-color:#C6FC00;}
 
+  /* ---- Pantalla con presentes (v2) ----
+     Una grilla de dos filas: arriba el texto de cada nivel, abajo la
+     lista de presentes de ese nivel, alineadas columna a columna. --k la
+     calcula ajustarTextoPantalla() para que todo entre. */
+  .pv-cuerpo{--k:1; flex:1; min-height:0; overflow:hidden; display:grid; column-gap:2.2em;
+    grid-template-rows:auto auto; align-content:start; margin-top:.6em;}
+  .pv-nivel{min-width:0;}
+  .pv-nivel h4{font-size:calc(.95em * var(--k)); text-transform:uppercase; letter-spacing:.1em; color:#8A8A8A; margin:0 0 .3em; font-weight:700;}
+  .pv-txt{white-space:pre-line; font-size:calc(1.55em * var(--k)); line-height:1.32; overflow-wrap:anywhere;}
+  .pv-una .pv-txt{font-size:calc(2.2em * var(--k));}
+  .pv-lista{min-width:0; border-top:1px solid rgba(255,255,255,.16);
+    margin-top:calc(.9em * var(--k)); padding-top:calc(.75em * var(--k));
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(calc(14em * var(--k)), 1fr));
+    column-gap:1.4em; row-gap:calc(.5em * var(--k)); align-content:start;}
+  .pv-cant{grid-column:1/-1; font-size:calc(.75em * var(--k)); text-transform:uppercase; letter-spacing:.1em; color:#7C7C7C; font-weight:700;}
+  .pv-al{min-width:0;}
+  .pv-nom{font-family:var(--font-display); font-weight:700; font-size:calc(1.2em * var(--k)); line-height:1.1; color:#FFFFFF;}
+  .pv-cargas{font-size:calc(1em * var(--k)); line-height:1.25; color:#9C9C9C; font-variant-numeric:tabular-nums;}
+  .pv-cargas b{color:#C6FC00; font-weight:700;}
+  .pv-sep{color:#555; padding:0 .3em;}
+  .pv-barra{position:absolute; left:0; bottom:0; height:4px; width:0; background:#C6FC00; transition:width .5s linear;}
+  @media (prefers-reduced-motion:reduce){ .pv-barra{transition:none;} }
+
+  /* ---- Pantalla del día: control desde el celular ---- */
+  .pc-card{padding:18px 18px 20px; margin-bottom:14px;}
+  .pc-card h3{font-family:var(--font-display); font-size:18px; margin:0 0 6px;}
+  .pc-desvincular{display:block; margin-top:16px; color:var(--text-soft); font-size:14px; text-decoration:underline;}
+  .pc-cab{display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap;}
+  .pc-vivo{font-size:12.5px; color:var(--accent); font-weight:600;}
+  .pc-sub{color:var(--text-soft); font-size:14.5px; margin:0 0 12px; line-height:1.45;}
+  .pc-msg{color:var(--amber); font-size:14px; margin:10px 0 0;}
+  .pc-fila{display:flex; gap:8px;}
+  .pc-fila > *{flex:1;}
+  .pc-fila .medicion-input{min-width:0; font-family:var(--font-mono); font-size:20px; letter-spacing:.2em; text-align:center;}
+  .pc-etq{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-faint); font-weight:700; margin:14px 0 8px;}
+  .pc-bloques{display:flex; flex-direction:column; gap:8px;}
+  .pc-bloque{display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%; text-align:left;
+    background:var(--surface-alt); color:var(--text); border:1px solid var(--border); border-radius:12px; padding:12px 14px; font-weight:600; font-size:15px;}
+  .pc-bloque small{color:var(--text-faint); font-weight:500; font-size:12.5px; white-space:nowrap;}
+  .pc-bloque.on{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent);}
+  .pc-bloque.on small{color:var(--accent);}
+  .pc-seg{display:grid; grid-template-columns:1fr 1fr; background:var(--surface-alt); border:1px solid var(--border); border-radius:12px; padding:3px;}
+  .pc-seg button{background:none; border:0; color:var(--text-soft); font-weight:600; font-size:14px; padding:9px 6px; border-radius:9px;}
+  .pc-seg button[aria-pressed="true"]{background:var(--accent); color:#0C0C0C;}
+  .pc-link{font-family:var(--font-mono); font-size:13px; color:var(--text); background:var(--surface-alt); border-radius:9px; padding:10px 12px; margin-bottom:10px; word-break:break-all;}
+
+  /* ---- Cargas del bloque (un botón para toda la clase) ---- */
+  .cb-abrir{margin:4px 0 14px; position:relative;}
+  .cb-en-tele{display:inline-block; margin-left:8px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    background:rgba(12,12,12,.25); border-radius:999px; padding:2px 8px; vertical-align:2px;}
+  .cb-ayuda{color:var(--text-soft); font-size:13.5px; margin:-4px 0 10px;}
+  .cb-lista{display:flex; flex-direction:column; border-top:1px solid var(--border); margin-bottom:12px;}
+  .cb-fila{display:grid; grid-template-columns:1fr auto; gap:2px 10px; align-items:center; text-align:left; width:100%;
+    background:none; border:0; border-bottom:1px solid var(--border); color:var(--text); padding:11px 2px;}
+  .cb-nom{font-weight:700; font-size:15.5px; grid-column:1;}
+  .cb-ejs{grid-column:1; display:flex; flex-wrap:wrap; gap:2px 12px; font-size:14px; color:var(--text-soft);}
+  .cb-ejs b{color:var(--accent); font-variant-numeric:tabular-nums;}
+  .cb-vacio{font-style:italic; color:var(--text-faint);}
+  .cb-editar{grid-column:2; grid-row:1 / span 2; color:var(--text-faint); font-size:13px; white-space:nowrap;}
+  .cb-check{display:flex; gap:10px; align-items:center; font-weight:600; font-size:15px; padding:12px 14px; margin-bottom:6px;
+    background:var(--surface-alt); border:1px solid var(--border); border-radius:12px; cursor:pointer;}
+  .cb-check input{width:20px; height:20px; accent-color:var(--accent);}
+
+  /* ---- Modo pared (link directo #pantalla) ----
+     Nadie toca la pantalla: sin botones, sin cursor y sin los avisos de
+     la app. El estado de la vinculación va chiquito arriba a la derecha y,
+     mientras ningún celular la maneja, el código grande abajo. */
+  body.modo-pared{cursor:none;}
+  body.modo-pared #ak-estado, body.modo-pared #ak-nuevo, body.modo-pared #ak-menu, body.modo-pared .aviso-dia-nuevo{display:none !important;}
+  .pared-estado{display:flex; flex-direction:column; align-items:flex-end; gap:.15em; color:#7C7C7C; font-size:.85em; text-align:right;}
+  .pared-estado b{color:#C6FC00; font-family:var(--font-mono); letter-spacing:.15em;}
+  .pared-codigo{position:absolute; left:50%; bottom:1.4em; transform:translateX(-50%); background:#161616;
+    border:1px solid rgba(198,252,0,.5); border-radius:1em; padding:.7em 1.4em; text-align:center; color:#A6A6A6; font-size:1.1em;}
+  .pared-codigo b{display:block; font-family:var(--font-mono); font-size:2.4em; letter-spacing:.3em; text-indent:.3em; color:#C6FC00; line-height:1.15;}
+
   /* Celular en horizontal espejando al TV: quedan ~360px de alto, así
      que se recorta todo lo que no sea contenido. Va al final de la hoja
      a propósito: con las mismas clases que las reglas de .pantalla-uno,
@@ -1138,9 +1213,9 @@ function recalcularRutinaHoy(){
   const r = rutinaDeClase(clase);
   RUTINA_HOY = r
     ? {dia:r.dia, disciplina:(clase && clase.disciplina) || r.disciplina, hora:(clase && clase.hora) || r.hora || '',
-       bloques:r.bloques, conNiveles:claseConNiveles(r), clave:claveClase(r)}
+       bloques:r.bloques, conNiveles:claseConNiveles(r), clave:claveClase(r), claseId:(clase && clase.id) || ''}
     : {dia:diaActivo(), disciplina:(clase && clase.disciplina) || '',
-       hora:(clase && clase.hora) || '', bloques:[], conNiveles:false, clave:''};
+       hora:(clase && clase.hora) || '', bloques:[], conNiveles:false, clave:'', claseId:(clase && clase.id) || ''};
 }
 
 /* Las clases de hoy salen del horario del día, no de una lista fija.
@@ -2564,6 +2639,7 @@ function render(){
   else if(state.screen === 'resumen') html = screenResumen();
   else if(state.screen === 'alumnos') html = screenAlumnos();
   else if(state.screen === 'pantalla') html = screenPantalla();
+  else if(state.screen === 'pantallaCtl') html = screenPantallaCtl();
   else if(state.screen === 'importar') html = screenImportar();
   else if(state.screen === 'banco') html = screenBanco();
   else if(state.screen === 'registro') html = screenRegistro();
@@ -2581,6 +2657,7 @@ function render(){
   else if(state.fichaModal) modalRoot.innerHTML = renderFichaModal(state.fichaModal);
   else if(state.finalizarModal) modalRoot.innerHTML = renderFinalizarModal(state.finalizarModal);
   else if(state.cargaModal) modalRoot.innerHTML = renderCargaModal(state.cargaModal);
+  else if(state.cargasBloqueModal) modalRoot.innerHTML = renderCargasBloqueModal(state.cargasBloqueModal);
   else if(state.semanaModal) modalRoot.innerHTML = renderSemanaModal(state.semanaModal);
   else modalRoot.innerHTML = '';
   /* Sin esto, cualquier render en la pantalla de importar (por ejemplo
@@ -2681,7 +2758,7 @@ function screenHoy(){
       <button class="linkrow" onclick="nav('resumen')"><span>Resumen de novedades</span><span class="arrow">›</span></button>
       <button class="linkrow" onclick="nav('alumnos')"><span>Buscar alumno</span><span class="arrow">›</span></button>
       <button class="linkrow" onclick="akFormularios.abrir()"><span>📋 Formularios de ingreso</span><span class="arrow">›</span></button>
-      <button class="linkrow" onclick="abrirPantalla()"><span>📺 Pantalla del día</span><span class="arrow">›</span></button>
+      <button class="linkrow" onclick="abrirPantallaCtl()"><span>📺 Pantalla del día</span><span class="arrow">›</span></button>
       <button class="linkrow" onclick="nav('registro')"><span>Registro de pruebas y métricas</span><span class="arrow">›</span></button>
       <button class="linkrow" onclick="nav('banco')"><span>Banco de ejercicios</span><span class="arrow">›</span></button>
       <button class="linkrow" onclick="nav('importar')"><span>Importar datos</span><span class="arrow">›</span></button>
@@ -2875,6 +2952,7 @@ function screenClase(claseId){
           <button type="button" class="linkbtn" onclick="pedirBorrarClase('${c.id}')">Borrar esta clase</button></div>`) : ''}
     ${(() => { const n = diferenciasClase(c); return n ? `<div class="aviso-pasado"><strong>${n} diferencia${n>1?'s':''} con Crossfy.</strong> Lo que marcaste acá manda en la app, pero la falta y la asistencia que cuentan para el plan del alumno son las de Crossfy. Corregilo allá y volvé a importar el listado de turnos: si coincide, el aviso desaparece.</div>` : ''; })()}
     ${bloqueCardHtml(c, rut)}
+    ${bViendo && nPresentes ? `<button type="button" class="btn btn-primary btn-block cb-abrir" onclick="abrirCargasBloque('${c.id}')">🏋️ Cargas · ${esc(tituloBloque(bViendo, bi))}${cargasEnPared(c.id, bViendo, bi) ? '<span class="cb-en-tele">en la pantalla</span>' : ''}</button>` : ''}
 
     <div class="section-label">Alumnos</div>
     <div class="filter-row">
@@ -2898,7 +2976,6 @@ function screenClase(claseId){
             ${aus ? `
             <button class="btn btn-ghost btn-sm" onclick="marcarVino('${c.id}', ${a.id})">Sí vino</button>
             <button class="btn btn-ghost btn-sm" onclick="quitarDeClase('${c.id}', ${a.id})">Quitar</button>` : `
-            <button class="btn btn-ghost btn-sm" onclick="abrirCarga(${a.id}, '${c.id}')">🏋️ Carga</button>
             ${(() => { const pr = bViendo ? pruebaAlumnoBloque(bViendo, a) : null; return pr ? `<button class="btn btn-ghost btn-sm" onclick="abrirResultado(${a.id}, '${c.id}')">📏 ${pr.medida === 'rm' ? 'RM' : 'Resultado'}</button>` : ''; })()}
             <button class="btn btn-ghost btn-sm" onclick="abrirNovedad(${a.id}, '${c.id}')">+ Novedad</button>
             <button class="linkbtn btn-mini" onclick="marcarNoVino('${c.id}', ${a.id})">No vino</button>`}
@@ -3285,16 +3362,17 @@ function avanzarBloquePantalla(delta){
   const n = RUTINA_HOY.bloques.length;
   if(!n) return;
   state.pantallaBloque = ((state.pantallaBloque + delta) % n + n) % n;
+  inicioRotacion = Date.now();
   render();
 }
-function irABloquePantalla(i){ state.pantallaBloque = i; render(); }
+function irABloquePantalla(i){ state.pantallaBloque = i; inicioRotacion = Date.now(); render(); }
 function elegirDisciplinaPantalla(disc){
   state.pantallaDisciplina = disc;
   state.pantallaBloque = 0;
   recalcularRutinaHoy();
   render();
 }
-function toggleAutoPantalla(){ pantallaAuto = !pantallaAuto; render(); }
+function toggleAutoPantalla(){ pantallaAuto = !pantallaAuto; inicioRotacion = Date.now(); render(); }
 /* Un solo intervalo para toda la app: chequea si corresponde rotar en vez
    de crear y destruir timers al entrar y salir de la pantalla. Se frena
    solo mientras alguien está editando, para no borrarle lo que escribe. */
@@ -3305,11 +3383,22 @@ setInterval(() => {
   recalcularRutinaHoy();
   if(RUTINA_HOY.clave !== antes){
     state.pantallaBloque = 0;
+    inicioRotacion = Date.now();
     if(state.screen === 'pantalla') render();
-    return;
   }
-  if(state.screen === 'pantalla' && pantallaAuto) avanzarBloquePantalla(1);
 }, 25000);
+/* La rotación cuenta desde el último cambio de bloque: si alguien elige
+   un bloque desde el celular, ese bloque se queda sus 25 segundos
+   enteros antes de pasar al siguiente. */
+const ROTACION_MS = 25000;
+let inicioRotacion = Date.now();
+setInterval(() => {
+  if(state.screen !== 'pantalla' || !pantallaAuto) return;
+  if(hayAlgoAMedias()) return;
+  if(Date.now() - inicioRotacion >= ROTACION_MS){ inicioRotacion = Date.now(); avanzarBloquePantalla(1); return; }
+  const barra = document.getElementById('pv-barra');
+  if(barra) barra.style.width = (100 * (Date.now() - inicioRotacion) / ROTACION_MS).toFixed(1) + '%';
+}, 500);
 
 /* Reloj de la pantalla del día. Va aparte del render: si cada segundo
    se volviera a dibujar la pantalla entera, se perdería el foco de los
@@ -3334,7 +3423,7 @@ setInterval(actualizarReloj, 1000);
    (todo está guardado, no se pierde nada). Si alguien está escribiendo
    o tiene un cartel abierto, no lo interrumpe: muestra un aviso. */
 function hayAlgoAMedias(){
-  if(state.novedadModal || state.fichaModal || state.cargaModal || state.finalizarModal || state.semanaModal) return true;
+  if(state.novedadModal || state.fichaModal || state.cargaModal || state.cargasBloqueModal || state.finalizarModal || state.semanaModal) return true;
   const el = document.activeElement;
   return !!(el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') && String(el.value || '').trim());
 }
@@ -3369,66 +3458,128 @@ function selectorClasesPantalla(){
       onclick="elegirDisciplinaPantalla(${esc(JSON.stringify(c.disciplina))})">${esc(c.hora)} · ${esc(c.disciplina)}${tiene ? '' : ' · sin rutina'}</button>`;
   }).join('')}</div>`;
 }
+/* ---------- Pantalla del salón: presentes y cargas ----------
+   Debajo de cada nivel va la lista de quienes vinieron con ese nivel, y
+   debajo de cada nombre las cargas que el profe confirmó para el bloque
+   (sólo si tildó "Mostrar en la pantalla"). Las columnas son las de los
+   niveles que tienen alguien presente: si hoy no vino nadie de Nivel 1,
+   esa columna no ocupa lugar. Nombres y ejercicios van abreviados. */
+
+/* Abreviatura de un ejercicio para la pared: la que se cargó en el banco
+   o, si no hay, la primera palabra entera y la inicial de cada una de las
+   demás ("Sentadilla trasera con barra" → "Sentadilla TCB"). */
+function abrevAuto(nombre){
+  const p = String(nombre || '').trim().split(/\s+/).filter(Boolean);
+  if(p.length < 2) return p.join('');
+  return p[0] + ' ' + p.slice(1).map(w => w.charAt(0).toUpperCase()).join('');
+}
+function abrevEj(nombre){
+  const id = buscarEnBanco(nombre);
+  const e = id ? ejercicioPorId(id) : null;
+  if(e && e.abrev) return e.abrev;
+  return abrevAuto(nombreEj(nombre));
+}
+/* "Juan P.": nombre e inicial del apellido. Si en la lista hay otro con
+   el mismo nombre, dos letras ("Juan Pe." / "Juan Ve."); si siguen
+   iguales, el apellido entero. */
+function nombreCortoPared(a, lista){
+  const nom = String(a.nombre || '').trim().split(/\s+/)[0] || '';
+  const ap = String(a.apellido || '').trim();
+  if(!ap) return nom;
+  const mismos = lista.filter(o => o !== a && (String(o.nombre || '').trim().split(/\s+/)[0] || '') === nom);
+  if(!mismos.length) return nom + ' ' + ap.charAt(0) + '.';
+  const dos = ap.slice(0, 2);
+  if(mismos.every(o => String(o.apellido || '').slice(0, 2).toLowerCase() !== dos.toLowerCase())) return nom + ' ' + dos + '.';
+  return nom + ' ' + ap;
+}
+function clavePantCargas(claseId, b, i){ return HOY_CLAVE + '|' + claseId + '|' + claveBloque(b, i); }
+function cargasEnPared(claseId, b, i){
+  const e = pantCargas[clavePantCargas(claseId, b, i)];
+  return e && e.alumnos ? e.alumnos : null;
+}
+function paredAlumnoHtml(a, lista, cargasMostradas){
+  const cs = cargasMostradas ? (cargasMostradas[a.id] || []) : [];
+  return `<div class="pv-al"><div class="pv-nom">${esc(nombreCortoPared(a, lista))}</div>${cs.length
+    ? `<div class="pv-cargas">${cs.map(([ej, kg]) => `${esc(abrevEj(ej))} <b>${esc(numKg(kg))}</b>`).join('<span class="pv-sep">·</span>')}</div>` : ''}</div>`;
+}
+
 function screenPantalla(){
+  if(modoPared) aplicarVistaPared();
   const dia = RUTINA_HOY.dia;
   const bloques = RUTINA_HOY.bloques;
+  const escala = Math.max(0.5, escalaPantalla + (modoPared ? 0.1 * ((pantCtl.vista && pantCtl.vista.dia === HOY_CLAVE && pantCtl.vista.ajuste) || 0) : 0));
+  const acciones = modoPared ? paredEstadoHtml() : `
+          <button class="btn pantalla-btn" onclick="cambiarEscalaPantalla(-0.1)" aria-label="Achicar texto">A−</button>
+          <button class="btn pantalla-btn" onclick="cambiarEscalaPantalla(0.1)" aria-label="Agrandar texto">A+</button>
+          <button class="btn pantalla-btn" onclick="salirPantalla()">Salir</button>`;
   if(!bloques.length){
     return `
-      <div class="pantalla" style="--esc:${escalaPantalla}">
+      <div class="pantalla ${modoPared ? 'pantalla-pared' : ''}" style="--esc:${escala}">
         <div class="pantalla-top">
           <div class="pantalla-titulo"><div class="pantalla-dia">${esc(dia)}</div></div>
           ${relojHtml()}
-          <div class="pantalla-acciones">
-            <button class="btn pantalla-btn" onclick="salirPantalla()">Salir</button>
-          </div>
+          <div class="pantalla-acciones">${modoPared ? paredEstadoHtml() : '<button class="btn pantalla-btn" onclick="salirPantalla()">Salir</button>'}</div>
         </div>
-        ${selectorClasesPantalla()}
+        ${modoPared ? '' : selectorClasesPantalla()}
         <div class="pantalla-vacio">${esc(motivoSinRutina())}</div>
+        ${modoPared ? paredCodigoGrandeHtml() : ''}
       </div>`;
   }
 
   const i = Math.min(state.pantallaBloque, bloques.length - 1);
   const b = bloques[i];
-  /* Una columna o tres según lo que haya cargado la planilla: si la clase
-     vino con "Para todos", el texto es uno solo y ocupa toda la pared. */
-  const conNiveles = RUTINA_HOY.conNiveles;
-  const columnas = conNiveles
-    ? [0,1,2].map(n => ({titulo:'Nivel ' + (n+1), txt:(b.niveles||[])[n] || ''}))
-    : [{titulo:'', txt: b.todos || ''}];
+  /* Se decide por bloque: en una rutina con niveles puede haber un bloque
+     "para todos" (la movilidad, por ejemplo), y ese va en una columna. */
+  const conNiveles = RUTINA_HOY.conNiveles && (b.niveles || []).some(t => t && String(t).trim());
+  const clase = RUTINA_HOY.claseId ? getClase(RUTINA_HOY.claseId) : null;
+  const presentes = clase ? presentesDe(clase).map(alumnoDeClase) : [];
+  const mostradas = clase ? cargasEnPared(clase.id, b, i) : null;
+  /* Con niveles: una columna por nivel con gente presente (las tres si
+     todavía no hay lista de la clase). Sin niveles: una sola columna. */
+  let columnas;
+  if(conNiveles){
+    columnas = [1,2,3].map(n => ({titulo:'Nivel ' + n, txt:(b.niveles||[])[n-1] || '',
+      alumnos: presentes.filter(a => (Number(a.nivel) || 2) === n)}));
+    if(presentes.length) columnas = columnas.filter(c => c.alumnos.length);
+  }else{
+    columnas = [{titulo:'', txt: b.todos || (b.niveles || []).find(t => t && String(t).trim()) || '', alumnos: presentes}];
+  }
 
   return `
-    <div class="pantalla pantalla-uno" style="--esc:${escalaPantalla}">
+    <div class="pantalla pantalla-uno pantalla-v2 ${modoPared ? 'pantalla-pared' : ''}" style="--esc:${escala}">
       <div class="pantalla-top">
         <div class="pantalla-titulo">
           <div class="pantalla-dia">${esc(tituloBloque(b, i))}</div>
           <div class="pantalla-sub">${esc(dia)}${RUTINA_HOY.disciplina ? ' · ' + esc(RUTINA_HOY.disciplina) : ''}${RUTINA_HOY.hora ? ' · ' + esc(RUTINA_HOY.hora) : ''}${b.duracion ? ' · ' + b.duracion + ' min' : ''}</div>
         </div>
         ${relojHtml()}
-        <div class="pantalla-acciones">
-          <button class="btn pantalla-btn" onclick="cambiarEscalaPantalla(-0.1)" aria-label="Achicar texto">A−</button>
-          <button class="btn pantalla-btn" onclick="cambiarEscalaPantalla(0.1)" aria-label="Agrandar texto">A+</button>
-          <button class="btn pantalla-btn" onclick="salirPantalla()">Salir</button>
-        </div>
+        <div class="pantalla-acciones">${acciones}</div>
       </div>
-      ${selectorClasesPantalla()}
+      ${modoPared ? '' : selectorClasesPantalla()}
 
-      <div class="pantalla-niveles ${conNiveles ? '' : 'pantalla-una'}">
+      <div class="pv-cuerpo ${conNiveles ? '' : 'pv-una'}" style="grid-template-columns:repeat(${columnas.length}, minmax(0,1fr))">
         ${columnas.map(col => `
-          <div class="pantalla-nivel">
+          <div class="pv-nivel">
             ${col.titulo ? `<h4>${esc(col.titulo)}</h4>` : ''}
-            <div class="txt">${esc(col.txt)}</div>
-          </div>
-        `).join('')}
+            <div class="pv-txt">${esc(col.txt)}</div>
+          </div>`).join('')}
+        ${presentes.length ? columnas.map(col => `
+          <div class="pv-lista">
+            <div class="pv-cant">${col.alumnos.length} presente${col.alumnos.length === 1 ? '' : 's'}</div>
+            ${col.alumnos.map(a => paredAlumnoHtml(a, presentes, mostradas)).join('')}
+          </div>`).join('') : ''}
       </div>
 
       <div class="pantalla-nav">
-        <button class="btn pantalla-btn" onclick="avanzarBloquePantalla(-1)" aria-label="Bloque anterior">‹</button>
+        ${modoPared ? '' : `<button class="btn pantalla-btn" onclick="avanzarBloquePantalla(-1)" aria-label="Bloque anterior">‹</button>`}
         <div class="pantalla-puntos">
-          ${bloques.map((x,n) => `<button class="pantalla-punto ${n===i?'activo':''}" onclick="irABloquePantalla(${n})" aria-label="${esc(tituloBloque(x,n))}"></button>`).join('')}
+          ${bloques.map((x,n) => `<button class="pantalla-punto ${n===i?'activo':''}" ${modoPared ? 'tabindex="-1"' : `onclick="irABloquePantalla(${n})"`} aria-label="${esc(tituloBloque(x,n))}"></button>`).join('')}
         </div>
-        <button class="btn pantalla-btn" onclick="avanzarBloquePantalla(1)" aria-label="Bloque siguiente">›</button>
-        <button class="btn pantalla-btn" onclick="toggleAutoPantalla()">${pantallaAuto ? '⏸ Fijar' : '▶ Rotar'}</button>
+        ${modoPared ? '' : `<button class="btn pantalla-btn" onclick="avanzarBloquePantalla(1)" aria-label="Bloque siguiente">›</button>
+        <button class="btn pantalla-btn" onclick="toggleAutoPantalla()">${pantallaAuto ? '⏸ Fijar' : '▶ Rotar'}</button>`}
       </div>
+      ${pantallaAuto ? '<div class="pv-barra" id="pv-barra"></div>' : ''}
+      ${modoPared && !controlActivo() ? paredCodigoGrandeHtml() : ''}
     </div>
   `;
 }
@@ -3445,17 +3596,17 @@ function salirPantalla(){
    niveles terminan con el mismo tamaño —el que necesita el más largo—
    para que el cartel se vea parejo. */
 function ajustarTextoPantalla(){
-  const txts = [...document.querySelectorAll('.pantalla-uno .pantalla-nivel .txt')];
-  if(!txts.length) return;
-  txts.forEach(t => { t.style.fontSize = ''; });
-  let size = parseFloat(getComputedStyle(txts[0]).fontSize);
-  let guard = 0;
-  /* El piso es bajo a propósito: al espejar un celular, su pantalla se
-     estira al tamaño del TV, así que 10px en el celular se ven grandes
-     en la pared. Lo que importa es que el bloque entre entero. */
-  while(txts.some(t => t.scrollHeight > t.clientHeight + 1) && size > 9 && guard++ < 40){
-    size -= 1;
-    txts.forEach(t => { t.style.fontSize = size + 'px'; });
+  const cuerpo = document.querySelector('.pv-cuerpo');
+  if(!cuerpo) return;
+  /* Arranca grande y baja de a poco hasta que todo el bloque (niveles y
+     presentes) entra sin cortarse. Así una clase con pocos alumnos se ve
+     con letra grande y una con veinte igual entra entera. */
+  const entra = () => cuerpo.scrollHeight <= cuerpo.clientHeight + 1 && cuerpo.scrollWidth <= cuerpo.clientWidth + 1;
+  let k = 1.6, guard = 0;
+  cuerpo.style.setProperty('--k', k);
+  while(!entra() && k > 0.35 && guard++ < 60){
+    k -= k > 1 ? 0.06 : 0.03;
+    cuerpo.style.setProperty('--k', k.toFixed(3));
   }
 }
 
@@ -4250,6 +4401,12 @@ function editorEjHtml(e, u){
       <input type="text" id="ej-nom-${i}" value="${esc(e.nombre)}">
       <button type="button" class="btn btn-ghost btn-sm" onclick="renombrarEj(${i})">Guardar</button>
     </div>
+    <h4>Abreviatura para la pantalla</h4>
+    <div class="medicion-sub">Cómo se ve en la pared, al lado de la carga. Si la dejás vacía se arma sola: «${esc(abrevAuto(e.nombre))}».</div>
+    <div class="banco-fila">
+      <input type="text" id="ej-abrev-${i}" maxlength="18" value="${esc(e.abrev || '')}" placeholder="${esc(abrevAuto(e.nombre))}">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="guardarAbrevEj(${i})">Guardar</button>
+    </div>
     <h4>Zona de fuerza</h4>
     <div class="medicion-sub">Una o dos. Con esto la ficha calcula cuánto mejoró cada zona. Sin zona, el ejercicio no entra en ese cálculo.</div>
     <div class="zona-chips">${ZORD.map(z => `<button type="button" class="nchip ${(e.zonas || []).indexOf(z) !== -1 ? 'on' : ''}" onclick="toggleZonaEj(${i}, '${z}')">${ZONAS_F[z]}</button>`).join('')}</div>
@@ -4341,6 +4498,15 @@ function quitarAliasEj(i, k){
   if(enUso){ aviso('Hay cargas guardadas como «' + a + '»: si lo sacás, se separan de este ejercicio.'); return; }
   e.alias.splice(k, 1);
   despuesDeEditarBanco();
+}
+function guardarAbrevEj(i){
+  const e = banco[i];
+  const el = document.getElementById('ej-abrev-' + i);
+  if(!e || !el) return;
+  const v = el.value.replace(/\s+/g, ' ').trim();
+  if(v) e.abrev = v; else delete e.abrev;
+  persistBanco();
+  showToast(v ? 'Abreviatura guardada' : 'Sin abreviatura: se arma sola');
 }
 function guardarNotasEj(i, v){
   const e = banco[i];
@@ -6223,8 +6389,10 @@ function guardarCarga(alumnoId, claseId){
     count++;
   });
   persistPendientes();
+  const desdeLista = !!state.cargasBloqueModal;
   cerrarCarga();
-  showToast(count ? 'Carga guardada · se aplica a la ficha al finalizar la clase' : 'Sin cambios');
+  showToast(desdeLista ? (count ? 'Listo · se pasa a la ficha al confirmar' : 'Sin cambios')
+    : (count ? 'Carga guardada · se aplica a la ficha al finalizar la clase' : 'Sin cambios'));
 }
 
 /* ---------- Modal: Finalizar clase ---------- */
@@ -6276,22 +6444,110 @@ function commitCargasClase(claseId){
   if(!c) return;
   /* Al que no vino no se le pasa ninguna carga: la sugerida del
      historial no es un dato de hoy. */
-  cargasAVolcar(c).forEach(it => {
-    const existing = cargaDe(it.alumnoId, it.ejercicio);
-    if(existing){
-      existing.kg = it.val; existing.claseId = claseId; existing.profesor = profesorActivo;
-    }else{
-      cargas.unshift({
-        id:'k'+Date.now()+'-'+it.alumnoId+'-'+it.ejercicio.replace(/\s+/g,''),
-        alumnoId: it.alumnoId, claseId, bloque: it.bloque, ejercicio: nombreEj(it.ejercicio), kg: it.val,
-        ejId: buscarEnBanco(it.ejercicio) || null, ts: Date.now(),
-        fecha: fechaCorta(), profesor: profesorActivo,
-      });
-    }
-    delete cargasPendientes[pendienteKey(claseId, it.alumnoId, it.ejercicio)];
+  cargasAVolcar(c).forEach(it => registrarCarga(claseId, it.alumnoId, it.ejercicio, it.bloque, it.val));
+  persistCargas();
+  persistPendientes();
+}
+
+/* Una carga a la ficha: un solo registro por alumno+ejercicio+día. */
+function registrarCarga(claseId, alumnoId, ejercicio, bloque, val){
+  const existing = cargaDe(alumnoId, ejercicio);
+  if(existing){
+    existing.kg = val; existing.claseId = claseId; existing.profesor = profesorActivo;
+  }else{
+    cargas.unshift({
+      id:'k'+Date.now()+'-'+alumnoId+'-'+String(ejercicio).replace(/\s+/g,''),
+      alumnoId, claseId, bloque, ejercicio: nombreEj(ejercicio), kg: val,
+      ejId: buscarEnBanco(ejercicio) || null, ts: Date.now(),
+      fecha: fechaCorta(), profesor: profesorActivo,
+    });
+  }
+  delete cargasPendientes[pendienteKey(claseId, alumnoId, ejercicio)];
+}
+
+/* ---------- Modal: Cargas del bloque ----------
+   Un solo botón para toda la clase: la lista de presentes con las cargas
+   de cada uno para el bloque (las que ya se ajustaron hoy o, si no, la
+   última que hizo, como sugerencia). Tocando un nombre se abre su
+   ventana de cargas para cambiarlas. "Confirmar" pasa todas a la ficha
+   de cada alumno; si además está tildado "Mostrar en la pantalla", van a
+   la pared. Para mostrarlas después, se abre de nuevo y se tilda. */
+function abrirCargasBloque(claseId){
+  const c = getClase(claseId), rut = c ? rutinaDeClase(c) : null;
+  if(!rut || !rut.bloques.length) return;
+  const bi = bloqueIdxClase(c, rut);
+  state.cargasBloqueModal = {claseId, bloqueIdx: bi, mostrar: !!cargasEnPared(claseId, rut.bloques[bi], bi)};
+  render();
+}
+function cerrarCargasBloque(){ state.cargasBloqueModal = null; render(); }
+function editarCargaDeLista(alumnoId){
+  const m = state.cargasBloqueModal; if(!m) return;
+  const el = document.getElementById('cb-mostrar');
+  if(el) m.mostrar = el.checked;
+  state.cargaModal = {alumnoId, claseId: m.claseId, bloqueIdx: m.bloqueIdx};
+  render();
+}
+function renderCargasBloqueModal(m){
+  const c = getClase(m.claseId), rut = c ? rutinaDeClase(c) : null;
+  const b = rut && rut.bloques[m.bloqueIdx];
+  if(!c || !b) return '';
+  const lista = presentesDe(c).map(alumnoDeClase);
+  const filas = lista.map(a => {
+    const items = itemsCargaModal({alumnoId: a.id, claseId: c.id, bloqueIdx: m.bloqueIdx});
+    const det = items.map(it => {
+      const v = cargaEfectiva(c.id, a.id, it.ejercicio);
+      return `<span class="cb-ej">${esc(nombreEj(it.ejercicio))} <b>${v === null || v === undefined || !(Number(v) > 0) ? '—' : esc(numKg(Number(v))) + ' kg'}</b></span>`;
+    }).join('');
+    return `<button type="button" class="cb-fila" onclick="editarCargaDeLista(${a.id})">
+      <span class="cb-nom">${esc(nombreCompleto(a))}<span class="nivel-badge ${nivelClass(a.nivel)}">${nivelLabel(a.nivel)}</span></span>
+      ${items.length ? `<span class="cb-ejs">${det}</span>` : '<span class="cb-ejs cb-vacio">Este bloque no tiene ejercicios con carga para su nivel</span>'}
+      <span class="cb-editar">Cambiar ›</span>
+    </button>`;
+  }).join('');
+  return `
+    <div class="modal-overlay" onclick="if(event.target===this) cerrarCargasBloque()">
+      <div class="modal-sheet">
+        <h2>Cargas · ${esc(tituloBloque(b, m.bloqueIdx))}</h2>
+        <div class="modal-sub">${esc(c.hora)} · ${esc(c.disciplina)} · ${lista.length} presente${lista.length === 1 ? '' : 's'}</div>
+        <p class="cb-ayuda">Son las de hoy o, si todavía no hay, la última que hizo cada uno. Tocá un nombre para cambiarlas.</p>
+        <div class="cb-lista">${filas || '<p class="empty-hist">No hay presentes en esta clase.</p>'}</div>
+        <label class="cb-check"><input type="checkbox" id="cb-mostrar" ${m.mostrar ? 'checked' : ''}> Mostrar en la pantalla del salón</label>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" onclick="cerrarCargasBloque()">Cancelar</button>
+          <button class="btn btn-primary" onclick="confirmarCargasBloque()">Confirmar</button>
+        </div>
+      </div>
+    </div>`;
+}
+function confirmarCargasBloque(){
+  const m = state.cargasBloqueModal; if(!m) return;
+  const c = getClase(m.claseId), rut = c ? rutinaDeClase(c) : null;
+  const b = rut && rut.bloques[m.bloqueIdx];
+  if(!c || !b) return;
+  const el = document.getElementById('cb-mostrar');
+  const mostrar = el ? el.checked : !!m.mostrar;
+  const snap = {};
+  let n = 0;
+  presentesDe(c).forEach(id => {
+    const fila = [];
+    itemsCargaModal({alumnoId: id, claseId: c.id, bloqueIdx: m.bloqueIdx}).forEach(it => {
+      const v = Number(cargaEfectiva(c.id, id, it.ejercicio));
+      if(!(v > 0)) return;
+      registrarCarga(c.id, id, it.ejercicio, it.bloque, v);
+      fila.push([nombreEj(it.ejercicio), v]);
+      n++;
+    });
+    if(fila.length) snap[id] = fila;
   });
   persistCargas();
   persistPendientes();
+  const k = clavePantCargas(c.id, b, m.bloqueIdx);
+  if(mostrar) pantCargas[k] = {ts: Date.now(), por: profesorActivo, alumnos: snap};
+  else delete pantCargas[k];
+  guardarPantCargas();
+  state.cargasBloqueModal = null;
+  showToast(n + ' carga' + (n === 1 ? '' : 's') + ' en la ficha' + (mostrar ? ' · en la pantalla' : ''));
+  render();
 }
 
 function finalizarClase(claseId){
@@ -7524,7 +7780,7 @@ function renderSemanaModal(m){
 function pintarModalSemana(){
   const root = ensureModalRoot();
   if(state.semanaModal) root.innerHTML = renderSemanaModal(state.semanaModal);
-  else if(!state.novedadModal && !state.fichaModal && !state.finalizarModal && !state.cargaModal) root.innerHTML = '';
+  else if(!state.novedadModal && !state.fichaModal && !state.finalizarModal && !state.cargaModal && !state.cargasBloqueModal) root.innerHTML = '';
 }
 /* Cuántas clases sumó, versionó o encontró iguales la hoja que se está
    aplicando. Se informa en el detalle y se pone en cero. */
@@ -8457,6 +8713,243 @@ function reiniciarDemo(){
   nav('hoy');
 }
 
+/* ---------- Pantalla del salón compartida ----------
+   La tele abre la app con el link directo (…/#pantalla) y queda en modo
+   pared: sólo muestra. La maneja un celular o tablet desde "Pantalla del
+   día": el primero que pone el código que se ve en la tele. Si después
+   otro profe pone el código, pasa a manejarla él, y la pared sigue
+   mostrando lo mismo hasta que elija otra cosa.
+
+   Todo viaja en dos cajas "en vivo" (se aplican al instante, sin
+   recargar):
+   - akasha-pantalla: {codigo, control:{aparato, nombre, ts},
+       vista:{dia, claseId, disciplina, bloque, auto, ajuste, ts}}
+   - akasha-pantalla-cargas: {'AAAA-MM-DD|claseId|bloque': {ts, por,
+       alumnos:{alumnoId: [[ejercicio, kg], …]}}} — las cargas que el profe
+       confirmó y pidió mostrar en la pared. */
+const PANT_KEY = 'akasha-pantalla';
+const PANT_CARGAS_KEY = 'akasha-pantalla-cargas';
+const modoPared = /^#pantalla\b/.test(location.hash || '');
+let pantCtl = {};
+let pantCargas = {};
+let msgVincular = '';
+let vistaAplicada = null;
+
+function idAparato(){
+  let id = null;
+  try{ id = localStorage.getItem('akasha-aparato'); }catch(e){}
+  if(!id){
+    id = 'ap' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    try{ localStorage.setItem('akasha-aparato', id); }catch(e){}
+  }
+  return id;
+}
+function leerPantalla(){
+  pantCtl = akStore.leerJSON(PANT_KEY, {}) || {};
+  pantCargas = akStore.leerJSON(PANT_CARGAS_KEY, {}) || {};
+}
+function guardarPantCtl(){ try{ akStore.setItem(PANT_KEY, JSON.stringify(pantCtl)); }catch(e){} }
+function guardarPantCargas(){
+  /* Lo de días anteriores ya no se va a mostrar: se limpia al guardar. */
+  Object.keys(pantCargas).forEach(k => { if(k.indexOf(HOY_CLAVE + '|') !== 0) delete pantCargas[k]; });
+  try{ akStore.setItem(PANT_CARGAS_KEY, JSON.stringify(pantCargas)); }catch(e){}
+}
+function controlActivo(){ return !!(pantCtl.control && pantCtl.control.aparato); }
+function soyControl(){ return controlActivo() && pantCtl.control.aparato === idAparato(); }
+function linkPared(){ return location.origin + location.pathname + '#pantalla'; }
+
+/* ---- En la tele ---- */
+function aplicarVistaPared(){
+  const v = pantCtl.vista;
+  if(!v || v.dia !== HOY_CLAVE) return;
+  /* La disciplina elegida desde el celular, si a esta hora hay más de una clase. */
+  if(v.disciplina && normDisc(v.disciplina) !== normDisc(RUTINA_HOY.disciplina)
+     && clasesEnCurso().some(c => normDisc(c.disciplina) === normDisc(v.disciplina))){
+    state.pantallaDisciplina = v.disciplina;
+    recalcularRutinaHoy();
+  }
+  /* Cada orden del celular se aplica una vez; después la rotación sigue sola. */
+  if(v.ts === vistaAplicada) return;
+  vistaAplicada = v.ts;
+  if(v.claseId && v.claseId === RUTINA_HOY.claseId) state.pantallaBloque = Math.max(0, Number(v.bloque) || 0);
+  pantallaAuto = v.auto !== false;
+  inicioRotacion = Date.now();
+}
+function paredEstadoHtml(){
+  if(!controlActivo()) return '';
+  return `<div class="pared-estado"><span>📱 ${esc(pantCtl.control.nombre || 'Vinculada')}</span><span>Código <b>${esc(pantCtl.codigo || '')}</b></span></div>`;
+}
+function paredCodigoGrandeHtml(){
+  if(!pantCtl.codigo) return '';
+  return `<div class="pared-codigo">Para manejar esta pantalla: en la app, Pantalla del día → Vincular<b>${esc(pantCtl.codigo)}</b></div>`;
+}
+/* Datos que cambian lo que se ve en la pared. Si otro aparato cambia uno
+   de estos, la tele se recarga sola (en unos segundos); si cambia otra
+   cosa (una novedad, una nota), no hace falta. */
+const CLAVES_DE_LA_PARED = ['akasha-ajustes-clase','akasha-alumnos-nuevos','akasha-alumnos-prov','akasha-banco',
+  'akasha-clases-manuales','akasha-eleccion-rutinas','akasha-nivel','akasha-planificaciones','akasha-reservas','akasha-disciplinas','akasha-medicion'];
+function iniciarModoPared(){
+  document.body.classList.add('modo-pared');
+  state.screen = 'pantalla'; state.params = {}; state.backStack = [];
+  if(!esHoy()) irAFecha(HOY_CLAVE);
+  pantallaAuto = true;
+  if(!pantCtl.codigo){ pantCtl.codigo = String(1000 + Math.floor(Math.random() * 9000)); guardarPantCtl(); }
+  /* Que la tele no se apague ni ponga el protector mientras muestra. */
+  const pedirLuz = () => { try{ if(navigator.wakeLock && document.visibilityState === 'visible') navigator.wakeLock.request('screen').catch(() => {}); }catch(e){} };
+  pedirLuz();
+  document.addEventListener('visibilitychange', pedirLuz);
+  /* Por si se cortó la conexión en tiempo real: cada 30 s relee el control. */
+  setInterval(() => { if(akStore.refrescarClave){ akStore.refrescarClave(PANT_KEY); akStore.refrescarClave(PANT_CARGAS_KEY); } }, 30000);
+  let recarga = null;
+  akStore.alCambiar(e => {
+    if(recarga || !e.cambiosRemotos || !akStore.clavesRemotas) return;
+    if(!akStore.clavesRemotas().some(k => CLAVES_DE_LA_PARED.indexOf(k) !== -1)) return;
+    recarga = setTimeout(() => location.reload(), 8000);
+  });
+  /* Con un toque (o el OK del control remoto) pasa a pantalla completa. */
+  const completa = () => { try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); }catch(e){} };
+  document.addEventListener('click', completa);
+  document.addEventListener('keydown', completa);
+}
+
+/* ---- En el celular o tablet que la maneja ---- */
+function abrirPantallaCtl(){
+  if(!esHoy()) irAFecha(HOY_CLAVE);
+  msgVincular = '';
+  nav('pantallaCtl');
+}
+function vistaVigente(){
+  const v = pantCtl.vista;
+  return v && v.dia === HOY_CLAVE && v.claseId === RUTINA_HOY.claseId ? v : null;
+}
+function cambiarVista(cambios){
+  const base = vistaVigente() || {bloque: 0, auto: true, ajuste: 0};
+  pantCtl.vista = Object.assign({}, base, {dia: HOY_CLAVE, claseId: RUTINA_HOY.claseId, disciplina: RUTINA_HOY.disciplina}, cambios, {ts: Date.now()});
+  guardarPantCtl();
+  render();
+}
+function vincularPantalla(){
+  const el = document.getElementById('pc-codigo');
+  const cod = String(el ? el.value : '').replace(/\D/g, '');
+  if(!pantCtl.codigo){ msgVincular = 'Todavía no se abrió la pantalla en la tele. Abrí ahí el link de abajo y va a aparecer el código.'; render(); return; }
+  if(cod !== String(pantCtl.codigo)){ msgVincular = 'Ese código no es el de la pantalla. Fijate el número que se ve en la tele.'; render(); return; }
+  msgVincular = '';
+  pantCtl.control = {aparato: idAparato(), nombre: profesorActivo, ts: Date.now()};
+  /* La pared no se toca: sigue con lo que mostraba. Sólo si no había
+     nada elegido hoy, se arranca rotando desde el primer bloque. */
+  if(!pantCtl.vista || pantCtl.vista.dia !== HOY_CLAVE){
+    pantCtl.vista = {dia: HOY_CLAVE, claseId: RUTINA_HOY.claseId, disciplina: RUTINA_HOY.disciplina, bloque: 0, auto: true, ajuste: 0, ts: Date.now()};
+  }
+  guardarPantCtl();
+  showToast('Pantalla vinculada a este aparato');
+  render();
+}
+function desvincularPantalla(){
+  if(!soyControl()) return;
+  delete pantCtl.control;
+  guardarPantCtl();
+  showToast('Pantalla desvinculada');
+  render();
+}
+function ctlBloque(i){ cambiarVista({bloque: i}); }
+function ctlAuto(auto){ cambiarVista({auto: !!auto}); }
+function ctlLetra(d){
+  const v = vistaVigente() || {};
+  cambiarVista({ajuste: d === 0 ? 0 : Math.max(-5, Math.min(8, (Number(v.ajuste) || 0) + d))});
+}
+function ctlClase(disc){
+  state.pantallaDisciplina = disc;
+  recalcularRutinaHoy();
+  cambiarVista({bloque: 0});
+}
+function copiarLinkPared(){
+  const t = linkPared();
+  try{
+    navigator.clipboard.writeText(t).then(() => showToast('Link copiado'), () => showToast(t));
+  }catch(e){ showToast(t); }
+}
+
+function screenPantallaCtl(){
+  /* Si la pared está en otra de las clases de este horario, el celular la sigue. */
+  const v = pantCtl.vista;
+  if(v && v.dia === HOY_CLAVE && v.disciplina && normDisc(v.disciplina) !== normDisc(RUTINA_HOY.disciplina)
+     && clasesEnCurso().some(c => normDisc(c.disciplina) === normDisc(v.disciplina))){
+    state.pantallaDisciplina = v.disciplina;
+    recalcularRutinaHoy();
+  }
+  const vv = vistaVigente();
+  const bloques = RUTINA_HOY.bloques || [];
+  const yo = soyControl();
+  const otro = controlActivo() && !yo ? pantCtl.control : null;
+  const clases = clasesEnCurso();
+  const vincular = `
+    <div class="card pc-card">
+      <h3>Vincular la pantalla</h3>
+      <p class="pc-sub">${otro
+        ? `Ahora la maneja <b>${esc(otro.nombre || 'otro aparato')}</b>. Si ponés el código, pasa a este aparato y la pared sigue mostrando lo mismo.`
+        : 'Poné el código que se ve en la tele.'}</p>
+      <div class="pc-fila">
+        <input type="text" id="pc-codigo" class="medicion-input" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Código" onkeydown="if(event.key==='Enter') vincularPantalla()">
+        <button type="button" class="btn btn-primary" onclick="vincularPantalla()">Vincular</button>
+      </div>
+      ${msgVincular ? `<p class="pc-msg">${esc(msgVincular)}</p>` : ''}
+    </div>`;
+  const controles = `
+    <div class="card pc-card">
+      <div class="pc-cab"><h3>En la pared</h3><span class="pc-vivo">Vinculada a este aparato</span></div>
+      ${clases.length > 1 ? `<div class="pc-etq">Clase</div><div class="filter-row">${clases.map(c =>
+        `<button type="button" class="chip ${normDisc(c.disciplina) === normDisc(RUTINA_HOY.disciplina) ? 'active' : ''}" onclick="ctlClase(${esc(JSON.stringify(c.disciplina))})">${esc(c.hora)} · ${esc(c.disciplina)}</button>`).join('')}</div>` : ''}
+      <p class="pc-sub">${esc(RUTINA_HOY.hora || '')}${RUTINA_HOY.disciplina ? ' · ' + esc(RUTINA_HOY.disciplina) : ''}</p>
+      ${bloques.length ? `<div class="pc-etq">Bloque</div>
+      <div class="pc-bloques">${bloques.map((b, i) => {
+        const on = vv ? (Number(vv.bloque) || 0) === i : i === 0;
+        const conCargas = RUTINA_HOY.claseId && cargasEnPared(RUTINA_HOY.claseId, b, i);
+        return `<button type="button" class="pc-bloque ${on ? 'on' : ''}" onclick="ctlBloque(${i})"><span>${esc(tituloBloque(b, i))}</span><small>${on ? (vv && vv.auto === false ? 'En la pared' : 'Arranca acá') : (b.duracion ? b.duracion + ' min' : '')}${conCargas ? ' · cargas ✓' : ''}</small></button>`;
+      }).join('')}</div>
+      <div class="pc-etq">Rotación</div>
+      <div class="pc-seg">
+        <button type="button" aria-pressed="${vv && vv.auto === false ? 'true' : 'false'}" onclick="ctlAuto(false)">Fija</button>
+        <button type="button" aria-pressed="${vv && vv.auto === false ? 'false' : 'true'}" onclick="ctlAuto(true)">Rotar cada 25 s</button>
+      </div>` : `<p class="empty-hist">${esc(motivoSinRutina())}</p>`}
+      <div class="pc-etq">Tamaño de letra${vv && vv.ajuste ? ' · ' + (vv.ajuste > 0 ? '+' : '') + vv.ajuste : ''}</div>
+      <div class="pc-fila">
+        <button type="button" class="btn btn-ghost" onclick="ctlLetra(-1)" aria-label="Achicar letra">A−</button>
+        <button type="button" class="btn btn-ghost" onclick="ctlLetra(0)">Auto</button>
+        <button type="button" class="btn btn-ghost" onclick="ctlLetra(1)" aria-label="Agrandar letra">A+</button>
+      </div>
+      <button type="button" class="linkbtn pc-desvincular" onclick="desvincularPantalla()">Desvincular este aparato</button>
+    </div>`;
+  return `
+    ${header('Pantalla del día', 'La pantalla del salón se maneja desde acá', true)}
+    ${yo ? controles : vincular}
+    <div class="card pc-card">
+      <h3>Link para la tele</h3>
+      <p class="pc-sub">Abrilo en el navegador de la tele o el proyector. Inicia sesión una sola vez y queda mostrando la clase en curso.</p>
+      <div class="pc-link">${esc(linkPared())}</div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="copiarLinkPared()">Copiar link</button>
+    </div>
+    <div class="linklist" style="margin-top:6px;">
+      <button class="linkrow" onclick="abrirPantalla()"><span>Mostrar la pantalla en este aparato</span><span class="arrow">›</span></button>
+    </div>`;
+}
+
+function iniciarPantallaCompartida(){
+  leerPantalla();
+  if(akStore.enVivo){
+    const alCambiar = () => {
+      leerPantalla();
+      if(state.screen !== 'pantalla' && state.screen !== 'pantallaCtl') return;
+      if(state.cargaModal || state.cargasBloqueModal) return;
+      const el = document.activeElement;
+      if(el && el.id === 'pc-codigo') return;
+      render();
+    };
+    akStore.enVivo(PANT_KEY, alCambiar);
+    akStore.enVivo(PANT_CARGAS_KEY, alCambiar);
+  }
+  if(modoPared) iniciarModoPared();
+}
+
 /* ---------- Toast ---------- */
 
 let toastTimer = null;
@@ -8472,6 +8965,7 @@ function showToast(msg){
 
 loadState();
 recalcularRutinaHoy();
+iniciarPantallaCompartida();
 render();
 </script>
 <script src="arranque.js"></script>

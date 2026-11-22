@@ -165,6 +165,11 @@
         }
         return todo;
       },
+      async leerClave(clave){
+        const {data, error} = await sb.from(TABLA).select('clave,subclave,valor,pos').eq('clave', clave);
+        if(error) throw error;
+        return (data || []).map(r => [r.clave, r.subclave, r.valor, r.pos]);
+      },
       async aplicar(ops){
         const ups = ops.filter(o => o.op === 'up').map(o => ({clave: o.c, subclave: o.s, valor: o.v, pos: o.p}));
         for(let i = 0; i < ups.length; i += 500){
@@ -186,7 +191,7 @@
           .on('postgres_changes', {event: '*', schema: 'public', table: TABLA}, p => {
             const fila = (p.eventType === 'DELETE' ? p.old : p.new) || {};
             if(!fila.clave) return;
-            fn({tipo: p.eventType, c: fila.clave, s: fila.subclave, v: p.new ? p.new.valor : null});
+            fn({tipo: p.eventType, c: fila.clave, s: fila.subclave, v: p.new ? p.new.valor : null, p: p.new ? p.new.pos : null});
           })
           .subscribe();
       },
@@ -267,7 +272,9 @@
     const s = document.createElement('script');
     s.textContent = codigo.textContent;
     document.body.appendChild(s);
-    /* Notas por voz de la clase: usa las funciones de la app. */
+    /* Notas por voz de la clase: usa las funciones de la app. La pared
+       (link #pantalla) no los necesita. */
+    if(/^#pantalla\b/.test(location.hash)) return;
     ['dictado.js', 'formularios.js'].forEach(src => {
       const d = document.createElement('script');
       d.src = src; d.async = false;
@@ -316,6 +323,13 @@
     window.AKASHA_USUARIO = {nombre: nombre || (email || '').split('@')[0], rol: (yo && yo.rol) || 'profe', email};
 
     window.akSupabase = sb;   // para leer tablas propias (formularios de ingreso)
+    /* La cuenta de la tele (rol "pantalla") sólo muestra la pared: entra
+       siempre en modo pantalla y sólo puede escribir el control de la
+       pantalla (el código de vinculación). */
+    if(window.AKASHA_USUARIO.rol === 'pantalla'){
+      akStore.limitarEscritura(['akasha-pantalla']);
+      if(!/^#pantalla\b/.test(location.hash)) history.replaceState(null, '', location.pathname + '#pantalla');
+    }
     await akStore.iniciar(backendSupabase(sb));
     montarIndicador(sb, email);
     lanzarApp();

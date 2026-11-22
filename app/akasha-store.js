@@ -129,6 +129,21 @@
   let subiendo = false, reintento = null, errorUltimo = null;
   let cambiosRemotos = false;
   const oyentes = new Set();
+  /* Claves "en vivo": lo que llega de otro aparato se aplica en el acto
+     (sin el aviso de "Tocá para actualizar") y se avisa a quien escucha.
+     Son cajas chicas que no se editan a medias, como el control de la
+     pantalla del salón: ahí esperar a recargar no sirve. */
+  const vivos = new Map();   // clave -> Set(fn)
+  const remotas = new Set(); // claves que otro aparato cambió desde que se abrió esta pantalla
+  /* Cuenta de sólo mostrar (la tele): lo que no esté en esta lista se
+     cambia en memoria pero no se sube. La base igual lo rechazaría, y un
+     rechazo trabaría también la subida de lo que sí puede escribir. */
+  let soloPuedeEscribir = null;   // null = sin límite; Set de claves si hay
+  const puedeSubir = clave => !soloPuedeEscribir || soloPuedeEscribir.has(clave);
+  function avisarVivo(clave){
+    const fns = vivos.get(clave);
+    if(fns) fns.forEach(fn => { try{ fn(); }catch(e){} });
+  }
 
   function avisar(){ oyentes.forEach(fn => { try{ fn(estado()); }catch(e){} }); }
   function estado(){
@@ -184,6 +199,13 @@
       if(!lsSet(clave, valor)) throw new Error('No hay espacio en este aparato');
       return;
     }
+    if(!puedeSubir(clave)){
+      const {tipo, filas} = codificar(valor);
+      const m = new Map([['~', {v: JSON.stringify({t: tipo}), p: 0}]]);
+      filas.forEach((f, i) => m.set(f.s, {v: f.v, p: i}));
+      base.set(clave, m);
+      return;
+    }
     const anterior = base.get(clave) || new Map();
     const {tipo, filas} = codificar(valor);
     const pos = asignarPosiciones(filas, anterior);
@@ -208,6 +230,7 @@
     if(!backend || SOLO_ESTE_APARATO.has(clave)){ lsDel(clave); return; }
     const anterior = base.get(clave);
     if(!anterior) return;
+    if(!puedeSubir(clave)){ base.delete(clave); return; }
     anterior.forEach((f, s) => encolar({op:'del', c: clave, s}));
     base.delete(clave);
     guardarCola(); guardarCache(); programarSubida(); avisar();
@@ -263,6 +286,7 @@
     /* 1) Lo último que este aparato vio (sirve si arranca sin internet). */
     try{ base = cargarDesdePlano(JSON.parse(lsGet(CACHE_KEY) || '[]')); }catch(e){ base = new Map(); }
     try{ cola = JSON.parse(lsGet(COLA_KEY) || '[]') || []; }catch(e){ cola = []; }
+    if(soloPuedeEscribir) cola = cola.filter(o => soloPuedeEscribir.has(o.c));
     /* 2) Lo que hay en la nube, si hay conexión. */
     let desdeNube = false;
     try{
@@ -294,14 +318,56 @@
       return;                                  // es nuestro propio cambio que vuelve
     }
     if(cola.some(o => o.c === ev.c && o.s === ev.s)) return;
+    if(vivos.has(ev.c)){
+      aplicarOp(base, ev.tipo === 'DELETE' ? {op:'del', c: ev.c, s: ev.s}
+        : {op:'up', c: ev.c, s: ev.s, v: ev.v, p: ev.p == null ? (actual ? actual.p : 0) : Number(ev.p)});
+      guardarCache();
+      avisarVivo(ev.c);
+      return;
+    }
+    remotas.add(ev.c);
     cambiosRemotos = true;
     avisar();
+  }
+
+  /* Vuelve a leer de la nube una clave en vivo. Por si se cortó la
+     conexión en tiempo real y se perdió algún cambio: la pantalla del
+     salón lo llama cada tanto. Lo que este aparato tiene sin subir se
+     respeta. */
+  async function refrescarClave(clave){
+    if(!backend || !backend.leerClave) return false;
+    let filas;
+    try{ filas = await backend.leerClave(clave); }catch(e){ return false; }
+    const nuevas = new Map();
+    filas.forEach(([c, s, v, p]) => { if(c === clave) nuevas.set(s, {v, p: p == null ? 0 : Number(p)}); });
+    cola.filter(o => o.c === clave).forEach(o => {
+      if(o.op === 'up') nuevas.set(o.s, {v: o.v, p: o.p}); else nuevas.delete(o.s);
+    });
+    const antes = base.get(clave) || new Map();
+    let distinto = antes.size !== nuevas.size;
+    if(!distinto) nuevas.forEach((f, s) => { const a = antes.get(s); if(!a || a.v !== f.v || a.p !== f.p) distinto = true; });
+    if(!distinto) return false;
+    if(nuevas.size) base.set(clave, nuevas); else base.delete(clave);
+    guardarCache();
+    avisarVivo(clave);
+    return true;
   }
 
   const akStore = {
     getItem, setItem, removeItem,
     key(){ return null; }, get length(){ return 0; },
-    iniciar, subirTodoYEsperar,
+    iniciar, subirTodoYEsperar, refrescarClave,
+    clavesRemotas(){ return Array.from(remotas); },
+    limitarEscritura(claves){
+      /* Se llama antes de iniciar(); ahí también se descarta lo que haya
+         quedado en cola de otra cuenta usada en este aparato. */
+      soloPuedeEscribir = new Set(claves);
+    },
+    enVivo(clave, fn){
+      if(!vivos.has(clave)) vivos.set(clave, new Set());
+      vivos.get(clave).add(fn);
+      return () => vivos.get(clave).delete(fn);
+    },
     estado, alCambiar(fn){ oyentes.add(fn); return () => oyentes.delete(fn); },
     get enLaNube(){ return !!backend; },
     leerJSON(clave, porDefecto){
